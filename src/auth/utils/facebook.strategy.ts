@@ -12,7 +12,7 @@ export class FacebookStrategy extends PassportStrategy(Strategy) {
     super({
       clientID: '3451865448435642',
       clientSecret: '006db59f252bfa2462cba5ff8b06af36',
-      callbackURL: 'http://localhost:2001/api/auth/facebook/redirect',
+      callbackURL: 'https://api-ebay.onrender.com/api/auth/facebook/redirect',
       scope: ['email', 'public_profile'],
       profileFields: ['id', 'email', 'displayName',],
     });
