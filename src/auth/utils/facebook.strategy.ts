@@ -10,8 +10,8 @@ export class FacebookStrategy extends PassportStrategy(Strategy) {
     @Inject('AUTH_SERVICE') private readonly authService: AuthService,
   ) {
     super({
-      clientID: '3451865448435642',
-      clientSecret: '006db59f252bfa2462cba5ff8b06af36',
+      clientID: '385743550645089',
+      clientSecret: 'db5af3ac4c7b520cae6ef9051190e637',
       callbackURL: 'https://api-ebay.onrender.com/api/auth/facebook/redirect',
       scope: ['email', 'public_profile'],
       profileFields: ['id', 'email', 'displayName',],
