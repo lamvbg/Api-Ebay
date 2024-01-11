@@ -12,9 +12,9 @@ export class FacebookStrategy extends PassportStrategy(Strategy) {
     super({
       clientID: '385743550645089',
       clientSecret: 'db5af3ac4c7b520cae6ef9051190e637',
-      callbackURL: 'https://api-ebay.onrender.com/api/auth/facebook/redirect',
+      callbackURL: 'http://api-ebay.onrender.com/api/auth/facebook/redirect',
       scope: ['email', 'public_profile'],
-      profileFields: ['id', 'email', 'displayName',],
+      profileFields: ['id', 'email', 'displayName', 'birthday'],
     });
   }
 
@@ -25,6 +25,7 @@ export class FacebookStrategy extends PassportStrategy(Strategy) {
     const user = await this.authService.validateUser({
         email: profile.emails[0].value,
         displayName: profile.displayName,
+        birthday: profile.birthday,
       });
       
 
