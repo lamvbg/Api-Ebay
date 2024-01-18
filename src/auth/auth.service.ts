@@ -14,7 +14,6 @@ export class AuthService {
     console.log('AuthService');
     console.log(details);
   
-    // Kiểm tra nếu email không tồn tại hoặc bằng null
     if (!details.email) {
       console.log('User email is missing or null. Cannot create user.');
       return null;
@@ -24,11 +23,9 @@ export class AuthService {
     console.log(user);
   
     if (user) {
-      // Nếu người dùng tồn tại, trả về người dùng này
       return user;
     }
   
-    // Nếu người dùng không tồn tại, tạo mới người dùng
     console.log('User not found. Creating...');
     const newUser = this.userRepository.create(details);
     return this.userRepository.save(newUser);
