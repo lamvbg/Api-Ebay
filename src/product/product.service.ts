@@ -95,7 +95,9 @@ export class EbayService {
 
       const result = await parseStringPromise(response.data, { explicitArray: false, ignoreAttrs: true });
 
-      return result;
+      const item = result.findItemsByKeywordsResponse?.searchResult?.item;
+
+      return item;
     } catch (error) {
       throw error;
     }
