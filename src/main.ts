@@ -11,8 +11,9 @@ async function bootstrap() {
   
   // Cấu hình CORS
   app.enableCors({
-    origin: 'http://localhost:5173',
+    origin: ['http://localhost:5173', 'https://ebayorder.netlify.app'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: 'Content-Type, Accept',
     credentials: true,
   });
 
