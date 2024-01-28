@@ -10,12 +10,15 @@ export class ProductEntity {
   @Column()
   name: string;
 
-  @Column()
-  category: string;
+  @Column({ type: 'json' })
+  category: string[];
 
-  @Column()
-  price: string;
+  @Column({ type: 'json' })
+  price: {
+    lastUpdated: Date;
+    value: number;
+  }[];
 
-  @Column()
-  imageUrl: string;
+  @Column({ type: 'json' })
+  imageUrl: string[];
 }
