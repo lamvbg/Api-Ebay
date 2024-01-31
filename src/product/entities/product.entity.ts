@@ -20,5 +20,20 @@ export class ProductEntity {
   }[];
 
   @Column({ type: 'json' })
-  imageUrl: string[];
+  additionalImages: string[];
+
+  @Column()
+  condition: string;
+
+  @Column({ type: 'json' })
+  seller: string[];
+
+  @Column({ type: 'json' })
+  thumbnailImages: string[];
+
+  @Column()
+  itemWebUrl: string;
+
+  @Column({ type: 'json' })
+  itemLocation: string[];
 }

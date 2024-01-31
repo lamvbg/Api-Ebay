@@ -37,13 +37,18 @@ export class EbayService {
         if (!existingProduct) {
           const newProduct = new ProductEntity();
           const categoryNames = itemSummary.categories.map(category => category.categoryName);
+          // const imagesAdd = itemSummary.additionalImages.map(i => i.imageUrl);
 
           newProduct.id = itemId;
           newProduct.name = itemSummary.title;
-      
           newProduct.category = categoryNames;
           newProduct.price = itemSummary.price.value;
-          newProduct.imageUrl = itemSummary.image;
+          newProduct.additionalImages = itemSummary.additionalImages;
+          newProduct.thumbnailImages = itemSummary.thumbnailImages;
+          newProduct.condition = itemSummary.condition;
+          newProduct.seller = itemSummary.seller;
+          newProduct.itemWebUrl = itemSummary.itemWebUrl;
+          newProduct.itemLocation = itemSummary.itemLocation;
       
           await this.productRepository.save(newProduct);
         }
