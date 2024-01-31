@@ -1,39 +1,39 @@
-// product/product.entity.ts
+  // product/product.entity.ts
 
-import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
+  import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity({ name: 'Product' })
-export class ProductEntity {
-  @PrimaryColumn()
-  id: string;
+  @Entity({ name: 'Product' })
+  export class ProductEntity {
+    @PrimaryColumn()
+    id: string;
 
-  @Column()
-  name: string;
+    @Column()
+    name: string;
 
-  @Column({ type: 'json' })
-  category: string[];
+    @Column({ type: 'json' })
+    category: string[];
 
-  @Column({ type: 'json' })
-  price: {
-    lastUpdated: Date;
-    value: number;
-  }[];
+    @Column({ type: 'json' })
+    price: {
+      lastUpdated: Date;
+      value: number;
+    }[];
 
-  @Column({ type: 'json' })
-  additionalImages: string[];
+    @Column({ type: 'json',  nullable: true  })
+    additionalImages: string[];
 
-  @Column()
-  condition: string;
+    @Column({ nullable: true})
+    condition: string;
 
-  @Column({ type: 'json' })
-  seller: string[];
+    @Column({ type: 'json',  nullable: true  })
+    seller: string[];
 
-  @Column({ type: 'json' })
-  thumbnailImages: string[];
+    @Column({ type: 'json',  nullable: true  })
+    thumbnailImages: string[];
 
-  @Column()
-  itemWebUrl: string;
+    @Column()
+    itemWebUrl: string;
 
-  @Column({ type: 'json' })
-  itemLocation: string[];
-}
+    @Column({ type: 'json',  nullable: true  })
+    itemLocation: string[];
+  }
