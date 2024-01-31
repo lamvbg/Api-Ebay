@@ -20,7 +20,7 @@ export class EbayService {
     try {
       const accessToken = await this.ebayAuthService.getAccessToken();
 
-      const response = await axios.get(`${this.ebayApiUrl}?q=${category}&limit=2`, {
+      const response = await axios.get(`${this.ebayApiUrl}?q=${category}&limit=200`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
