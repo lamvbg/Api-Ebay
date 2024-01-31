@@ -1,4 +1,4 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { Request } from 'express';
 import { FacebookAuthGuard, GoogleAuthGuard } from './utils/Guards';
 
@@ -13,8 +13,8 @@ export class AuthController {
 
   @Get('google/redirect')
   @UseGuards(GoogleAuthGuard)
-  handleGoogleRedirect() {
-    return { msg: 'OK' };
+  async handleGoogleRedirect() {
+    return {msg: 'Google authentication successful' };
   }
 
   // Facebook authentication routes
