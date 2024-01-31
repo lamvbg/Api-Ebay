@@ -20,14 +20,14 @@ export class AuthController {
   // Facebook authentication routes
   @Get('facebook/login')
   @UseGuards(FacebookAuthGuard)
-  handleFacebookLogin(@Req() request: Request, @Res() response: Response) {
-    response.redirect('https://ebay-store.onrender.com');
+  handleFacebookLogin() {
+    return { msg: 'Facebook Authentication' };
   }
 
   @Get('facebook/redirect')
   @UseGuards(FacebookAuthGuard)
-  handleFacebookRedirect() {
-    return { msg: 'OK' };
+  handleFacebookRedirect(@Req() request: Request, @Res() response: Response) {
+    response.redirect('https://ebay-store.onrender.com');
   }
 
   @Get('status')
