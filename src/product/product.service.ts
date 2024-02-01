@@ -5,6 +5,8 @@ import { Repository } from 'typeorm';
 import { EbayAuthService } from './utils/ebay-auth.service';
 import { ProductEntity } from './entities';
 import { parseStringPromise, Builder } from 'xml2js'; // Import parseStringPromise và Builder
+import { PaginationQueryDto } from './dto/PaginationQueryDto.dto';
+import { PaginatedProductsResultDto } from './dto/PaginatedProductsResultDto.dto';
 
 @Injectable()
 export class EbayService {
@@ -134,7 +136,34 @@ async searchItemById(itemId: string): Promise<any> {
   }
 }
 
-async findAll(): Promise<ProductEntity[]> {
-  return this.productRepository.find();
+async findAll(paginationQuery: PaginationQueryDto): Promise<PaginatedProductsResultDto> {
+  let { page, limit } = paginationQuery;
+
+  page = Number(page);
+  limit = Number(limit);
+
+  if (!Number.isFinite(page) || page < 1) {
+    page = 1;
+  }
+  if (!Number.isFinite(limit) || limit < 1) {
+    limit = 20; // hoặc một giá trị mặc định khác
+  }
+
+  const offset = (page - 1) * limit;
+
+  const [data, totalCount] = await Promise.all([
+    this.productRepository.find({
+      skip: offset,
+      take: limit,
+    }),
+    this.productRepository.count(),
+  ]);
+
+  return {
+    data,
+    page,
+    limit,
+    totalCount,
+  };
 }
 }

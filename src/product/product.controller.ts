@@ -3,6 +3,8 @@
 import { Controller, Get, Query, Param, Post, Patch, HttpException, HttpStatus } from '@nestjs/common';
 import { EbayService } from './product.service';
 import { ProductEntity } from './entities';
+import { PaginationQueryDto } from './dto/PaginationQueryDto.dto';
+import { PaginatedProductsResultDto } from './dto/PaginatedProductsResultDto.dto';
 
 @Controller('ebay')
 export class EbayController {
@@ -31,8 +33,8 @@ export class EbayController {
   }
 
   @Get()
-  async findAll(): Promise<ProductEntity[]> {
-    return this.ebayService.findAll();
+  async findAll(@Query() paginationQuery: PaginationQueryDto): Promise<PaginatedProductsResultDto> {
+    return this.ebayService.findAll(paginationQuery);
   }
 
 }
