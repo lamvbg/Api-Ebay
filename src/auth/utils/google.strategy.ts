@@ -11,15 +11,15 @@ export class GoogleStrategy extends PassportStrategy(Strategy) {
     super({
       clientID: '663430011506-av2org7g915448j33o0ruo58vubmda8v.apps.googleusercontent.com',
       clientSecret: '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',
-      callbackURL: 'http://localhost:2001/api/auth/google/redirect',
+      callbackURL: 'https://api-ebay.onrender.com/api/auth/google/login',
       scope: ['profile', 'email'],
     });
   }
 
   async validate(accessToken: string, refreshToken: string, profile: Profile) {
-    console.log(accessToken);
-    console.log(refreshToken);
-    console.log(profile);
+    // console.log(accessToken);
+    // console.log(refreshToken);
+    // console.log(profile);
     const user = await this.authService.validateUser({
       email: profile.emails[0].value,
       displayName: profile.displayName,

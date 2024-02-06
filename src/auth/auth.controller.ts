@@ -13,8 +13,9 @@ export class AuthController {
 
   @Get('google/redirect')
   @UseGuards(GoogleAuthGuard)
-  handleGoogleRedirect(@Req() request: Request, @Res() response: Response) {
-    response.redirect('https://ebay-store.onrender.com');
+  handleGoogleRedirect() {
+    // response.redirect('https://ebay-store.onrender.com');
+    return { msg: 'login'}
   }
 
   // Facebook authentication routes
