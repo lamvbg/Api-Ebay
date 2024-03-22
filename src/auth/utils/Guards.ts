@@ -3,20 +3,16 @@ import { AuthGuard } from '@nestjs/passport';
 
 @Injectable()
 export class GoogleAuthGuard extends AuthGuard('google') {
-  async canActivate(context: ExecutionContext) {
-    const activate = (await super.canActivate(context)) as boolean;
-    const request = context.switchToHttp().getRequest();
-    await super.logIn(request);
-    return activate;
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const canActivate = await super.canActivate(context);
+    return canActivate as boolean;
   }
 }
 
 @Injectable()
 export class FacebookAuthGuard extends AuthGuard('facebook') {
-  async canActivate(context: ExecutionContext) {
-    const activate = (await super.canActivate(context)) as boolean;
-    const request = context.switchToHttp().getRequest();
-    await super.logIn(request);
-    return activate;
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const canActivate = await super.canActivate(context);
+    return canActivate as boolean;
   }
 }

@@ -2,17 +2,19 @@ import { Inject, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Profile, Strategy } from 'passport-facebook';
 import { AuthService } from '../auth.service';
+import { JwtService } from '@nestjs/jwt';
 //aaa
 
 @Injectable()
-export class FacebookStrategy extends PassportStrategy(Strategy) {
+export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
   constructor(
-    @Inject('AUTH_SERVICE') private readonly authService: AuthService,
+    private readonly authService: AuthService,
+    private readonly jwtService: JwtService,
   ) {
     super({
       clientID: '385743550645089',
       clientSecret: 'db5af3ac4c7b520cae6ef9051190e637',
-      callbackURL: 'https://api-ebay.onrender.com/api/auth/facebook/redirect',
+      callbackURL: 'http://localhost:2001/api/auth/facebook/redirect',
       scope: ['email', 'public_profile'],
       profileFields: ['id', 'email', 'displayName', 'birthday'],
     });
@@ -22,18 +24,18 @@ export class FacebookStrategy extends PassportStrategy(Strategy) {
 
     console.log(accessToken);
     console.log(profile);
-    const user = await this.authService.validateUser({
+    const user = await this.authService.validateUserFromFacebook({
         email: profile.emails[0].value,
         displayName: profile.displayName,
         birthday: profile.birthday,
       });
       
 
-    const payload = {
-      user,
-      accessToken,
-    };
+      const payload = { sub: user.id, email: user.email };
 
-    done(null, payload);
+      const token = this.jwtService.sign(payload);
+
+      console.log(token);
+      return { accessToken: token };
   }
 }

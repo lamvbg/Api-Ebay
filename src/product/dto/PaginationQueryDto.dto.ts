@@ -11,4 +11,7 @@ export class PaginationQueryDto {
   @IsPositive()
   @Type(() => Number)
   limit: number = 20;
+
+  minPrice?: number;
+  maxPrice?: number;
 }

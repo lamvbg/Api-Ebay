@@ -9,5 +9,9 @@ export class UserEntity {
   email: string;
 
   @Column()
+  googleId: string;
+
+  @Column()
   displayName: string;
+  
 }

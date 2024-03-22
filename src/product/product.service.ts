@@ -21,30 +21,36 @@ export class EbayService {
   async searchItems(category: string): Promise<any> {
     try {
       const accessToken = await this.ebayAuthService.getAccessToken();
-
+  
       const response = await axios.get(`${this.ebayApiUrl}?q=${category}&limit=200`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      // console.log(response.data);
-
+  
       const itemSummaries = response.data.itemSummaries;
-
+  
       for (const itemSummary of itemSummaries) {
         const itemId = itemSummary.itemId;
-      
+        const newPriceValue = parseFloat(itemSummary.price.value); // Giả sử giá mới là số
+  
         const existingProduct = await this.productRepository.findOne({ where: { id: itemId } });
-        
+  
         if (!existingProduct) {
           const newProduct = new ProductEntity();
           const categoryNames = itemSummary.categories.map(category => category.categoryName);
-          // const imagesAdd = itemSummary.additionalImages.map(i => i.imageUrl);
-
+  
           newProduct.id = itemId;
           newProduct.name = itemSummary.title;
-          newProduct.category = categoryNames;
-          newProduct.price = itemSummary.price.value;
+          newProduct.category = category;
+  
+          // Tạo một mảng price cho newProduct với một đối tượng gồm value và lastUpdated
+          const newPriceEntry = {
+            lastUpdated: new Date(),
+            value: newPriceValue
+          };
+          newProduct.price = [newPriceEntry]; // Gán giá trị này thay vì itemSummary.price
+  
           newProduct.additionalImages = itemSummary.additionalImages;
           newProduct.thumbnailImages = itemSummary.thumbnailImages;
           newProduct.condition = itemSummary.condition;
@@ -53,14 +59,29 @@ export class EbayService {
           newProduct.itemLocation = itemSummary.itemLocation;
       
           await this.productRepository.save(newProduct);
+        } else {
+          if (!Array.isArray(existingProduct.price)) {
+            existingProduct.price = [];
+          }
+          const lastPriceEntry = existingProduct.price[existingProduct.price.length - 1];
+          const lastPrice = lastPriceEntry ? lastPriceEntry.value : null;
+  
+          if (lastPrice !== newPriceValue) {
+            const priceUpdate = {
+              lastUpdated: new Date(),
+              value: newPriceValue
+            };
+            existingProduct.price.push(priceUpdate);
+            await this.productRepository.save(existingProduct);
+          }
         }
       }
-
+  
       return response.data;
     } catch (error) {
       throw error;
     }
-  }
+  } 
 
   async getItemAndUpdatePrice(itemId: string): Promise<any> {
     try {
@@ -137,27 +158,41 @@ async searchItemById(itemId: string): Promise<any> {
 }
 
 async findAll(paginationQuery: PaginationQueryDto): Promise<PaginatedProductsResultDto> {
-  let { page, limit } = paginationQuery;
+  let { page, limit, minPrice, maxPrice } = paginationQuery;
 
   page = Number(page);
   limit = Number(limit);
+  minPrice = Number(minPrice);
+  maxPrice = Number(maxPrice);
 
+  // Kiểm tra và cài đặt giá trị mặc định nếu cần
   if (!Number.isFinite(page) || page < 1) {
     page = 1;
   }
   if (!Number.isFinite(limit) || limit < 1) {
-    limit = 20; // hoặc một giá trị mặc định khác
+    limit = 20; // Hoặc một giá trị mặc định khác
   }
 
   const offset = (page - 1) * limit;
 
-  const [data, totalCount] = await Promise.all([
-    this.productRepository.find({
-      skip: offset,
-      take: limit,
-    }),
-    this.productRepository.count(),
-  ]);
+  // Xây dựng điều kiện lọc theo giá
+  const queryBuilder = this.productRepository.createQueryBuilder('product');
+
+  if (Number.isFinite(minPrice)) {
+    queryBuilder.andWhere("CAST(product.price->0->>'value' AS NUMERIC) >= :minPrice", { minPrice });
+  }
+  if (Number.isFinite(maxPrice)) {
+    queryBuilder.andWhere("CAST(product.price->0->>'value' AS NUMERIC) <= :maxPrice", { maxPrice });
+  }
+  
+
+const [data, totalCount] = await Promise.all([
+  queryBuilder
+    .skip(offset)
+    .take(limit)
+    .getMany(),
+  queryBuilder.getCount(),
+]);
 
   return {
     data,

@@ -11,9 +11,9 @@
     name: string;
 
     @Column({ type: 'json' })
-    category: string[];
+    category: string;
 
-    @Column({ type: 'json' })
+    @Column({ type: 'jsonb' })
     price: {
       lastUpdated: Date;
       value: number;

@@ -4,20 +4,20 @@ import { UserEntity } from 'src/user/entities';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { GoogleStrategy } from './utils/google.strategy';
-import { SessionSerializer } from './utils/Serializer';
 import { FacebookStrategy } from './utils/facebook.strategy';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity])],
+  imports: [TypeOrmModule.forFeature([UserEntity]),
+  JwtModule.register({
+    secret: 'your-secret-key',
+    signOptions: { expiresIn: '1h' },
+  }),],
   controllers: [AuthController],
   providers: [
     GoogleStrategy,
     FacebookStrategy,
-    SessionSerializer,
-    {
-      provide: 'AUTH_SERVICE',
-      useClass: AuthService,
-    },
+    AuthService
   ],
 })
 export class AuthModule {}

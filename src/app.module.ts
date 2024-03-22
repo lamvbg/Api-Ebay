@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { DatabaseModule } from './config/database.module';
 import { PassportModule } from '@nestjs/passport';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -13,7 +14,10 @@ import { PassportModule } from '@nestjs/passport';
     UserModule,
     EbayModule,
     DatabaseModule,
-    PassportModule.register({ session: true }),
+    JwtModule.register({
+      secret: 'your-secret-key',
+      signOptions: { expiresIn: '3h' },
+    })
   ],
 })
 export class AppModule {}

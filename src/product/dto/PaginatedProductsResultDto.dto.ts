@@ -5,5 +5,7 @@ export class PaginatedProductsResultDto {
     page: number;
     limit: number;
     totalCount: number;
+    minPrice?: number;
+    maxPrice?: number;
   }
   

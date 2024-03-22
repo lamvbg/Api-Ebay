@@ -14,7 +14,7 @@ export class AuthController {
   @Get('google/redirect')
   @UseGuards(GoogleAuthGuard)
   handleGoogleRedirect() {
-    return { msg: 'OK'}; 
+    return { msg: 'Google Authentication' };
   }
 
   // Facebook authentication routes
