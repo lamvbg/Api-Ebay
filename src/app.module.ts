@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { EbayModule } from './product/product.module';
@@ -7,6 +7,8 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { DatabaseModule } from './config/database.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
+import { OrderModule } from './order/order.module';
+// import { AuthMiddleware } from './auth/authMiddleWare';
 
 @Module({
   imports: [
@@ -14,10 +16,15 @@ import { JwtModule } from '@nestjs/jwt';
     UserModule,
     EbayModule,
     DatabaseModule,
+    OrderModule,
     JwtModule.register({
       secret: 'your-secret-key',
       signOptions: { expiresIn: '24h' },
     })
   ],
 })
-export class AppModule {}
+export class AppModule {
+  // configure(consumer: MiddlewareConsumer) {
+  //   consumer.apply(AuthMiddleware).forRoutes('*');
+  // }
+}

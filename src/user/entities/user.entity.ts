@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { OrderEntity } from 'src/order/entities/order.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: 'users' })
 export class UserEntity {
@@ -9,9 +10,9 @@ export class UserEntity {
   email: string;
 
   @Column()
-  googleId: string;
-
-  @Column()
   displayName: string;
+
+  @OneToMany(() => OrderEntity, order => order.user)
+  orders: OrderEntity[];
   
 }

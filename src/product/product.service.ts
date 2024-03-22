@@ -22,7 +22,7 @@ export class EbayService {
     try {
       const accessToken = await this.ebayAuthService.getAccessToken();
   
-      const response = await axios.get(`${this.ebayApiUrl}?q=${category}&limit=200`, {
+      const response = await axios.get(`${this.ebayApiUrl}?q=${category}&limit=50`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -44,12 +44,11 @@ export class EbayService {
           newProduct.name = itemSummary.title;
           newProduct.category = category;
   
-          // Tạo một mảng price cho newProduct với một đối tượng gồm value và lastUpdated
           const newPriceEntry = {
             lastUpdated: new Date(),
             value: newPriceValue
           };
-          newProduct.price = [newPriceEntry]; // Gán giá trị này thay vì itemSummary.price
+          newProduct.price = [newPriceEntry];
   
           newProduct.additionalImages = itemSummary.additionalImages;
           newProduct.thumbnailImages = itemSummary.thumbnailImages;
@@ -57,6 +56,7 @@ export class EbayService {
           newProduct.seller = itemSummary.seller;
           newProduct.itemWebUrl = itemSummary.itemWebUrl;
           newProduct.itemLocation = itemSummary.itemLocation;
+          newProduct.marketingPrice = itemSummary.marketingPrice;
       
           await this.productRepository.save(newProduct);
         } else {
@@ -158,7 +158,7 @@ async searchItemById(itemId: string): Promise<any> {
 }
 
 async findAll(paginationQuery: PaginationQueryDto): Promise<PaginatedProductsResultDto> {
-  let { page, limit, minPrice, maxPrice, category } = paginationQuery;
+  let { page, limit, minPrice, maxPrice, category, marketingPrice  } = paginationQuery;
 
   page = Number(page);
   limit = Number(limit);
@@ -187,6 +187,9 @@ async findAll(paginationQuery: PaginationQueryDto): Promise<PaginatedProductsRes
   if (category) {
     queryBuilder.andWhere("product.category = :category", { category });
   }  
+  if (marketingPrice){
+    queryBuilder.andWhere("product.marketingPrice IS NOT NULL");
+  }
   
 const [data, totalCount] = await Promise.all([
   queryBuilder

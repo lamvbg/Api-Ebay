@@ -16,4 +16,6 @@ export class PaginationQueryDto {
   maxPrice?: number;
 
   category?: string;
+
+  marketingPrice? : string[];
 }
