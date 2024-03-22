@@ -26,8 +26,8 @@ export class AuthController {
 
   @Get('facebook/redirect')
   @UseGuards(FacebookAuthGuard)
-  handleFacebookRedirect(@Res() res: Response) {
-    res.redirect('http://localhost:5173'); 
+  handleFacebookRedirect() {
+    return { msg: 'Google Authentication' };; 
   }
 
   @Get('status')

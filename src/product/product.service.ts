@@ -158,19 +158,18 @@ async searchItemById(itemId: string): Promise<any> {
 }
 
 async findAll(paginationQuery: PaginationQueryDto): Promise<PaginatedProductsResultDto> {
-  let { page, limit, minPrice, maxPrice } = paginationQuery;
+  let { page, limit, minPrice, maxPrice, category } = paginationQuery;
 
   page = Number(page);
   limit = Number(limit);
   minPrice = Number(minPrice);
   maxPrice = Number(maxPrice);
 
-  // Kiểm tra và cài đặt giá trị mặc định nếu cần
   if (!Number.isFinite(page) || page < 1) {
     page = 1;
   }
   if (!Number.isFinite(limit) || limit < 1) {
-    limit = 20; // Hoặc một giá trị mặc định khác
+    limit = 20; 
   }
 
   const offset = (page - 1) * limit;
@@ -184,13 +183,17 @@ async findAll(paginationQuery: PaginationQueryDto): Promise<PaginatedProductsRes
   if (Number.isFinite(maxPrice)) {
     queryBuilder.andWhere("CAST(product.price->0->>'value' AS NUMERIC) <= :maxPrice", { maxPrice });
   }
-  
 
+  if (category) {
+    queryBuilder.andWhere("product.category = :category", { category });
+  }  
+  
 const [data, totalCount] = await Promise.all([
   queryBuilder
     .skip(offset)
     .take(limit)
     .getMany(),
+    
   queryBuilder.getCount(),
 ]);
 

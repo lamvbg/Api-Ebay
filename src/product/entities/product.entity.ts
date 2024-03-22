@@ -10,7 +10,7 @@
     @Column()
     name: string;
 
-    @Column({ type: 'json' })
+    @Column()
     category: string;
 
     @Column({ type: 'jsonb' })
