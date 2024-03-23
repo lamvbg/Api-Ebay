@@ -8,6 +8,7 @@ import { DatabaseModule } from './config/database.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { OrderModule } from './order/order.module';
+import { CategoryModule } from './Category/category.module';
 // import { AuthMiddleware } from './auth/authMiddleWare';
 
 @Module({
@@ -17,6 +18,7 @@ import { OrderModule } from './order/order.module';
     EbayModule,
     DatabaseModule,
     OrderModule,
+    CategoryModule,
     JwtModule.register({
       secret: 'your-secret-key',
       signOptions: { expiresIn: '24h' },

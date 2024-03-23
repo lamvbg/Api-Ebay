@@ -1,7 +1,8 @@
 // product/product.entity.ts
 
+import { Category } from 'src/Category/entities';
 import { OrderEntity } from 'src/order/entities/order.entity';
-import { Column, Entity, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: 'Product' })
 export class ProductEntity {
@@ -11,8 +12,8 @@ export class ProductEntity {
   @Column()
   name: string;
 
-  @Column()
-  category: string;
+  @ManyToOne(() => Category, category => category.products, { eager: true })
+  category: Category;
 
   @Column({ type: 'jsonb' })
   price: {
