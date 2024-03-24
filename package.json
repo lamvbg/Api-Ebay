@@ -44,6 +44,7 @@
     "postgres": "^3.4.3",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
+    "strip-tags": "^0.1.1",
     "typeorm": "^0.3.19",
     "xml2js": "^0.6.2"
   },

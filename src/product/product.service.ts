@@ -103,40 +103,67 @@ export class EbayService {
 
   async getItemAndUpdatePrice(itemId: string): Promise<any> {
     try {
-      const accessToken = await this.ebayAuthService.getAccessToken();
+        const accessToken = await this.ebayAuthService.getAccessToken();
 
-      const response = await axios.get(`https://api.ebay.com/buy/browse/v1/item/${itemId}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+        const response = await axios.get(`https://api.ebay.com/buy/browse/v1/item/${itemId}`, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        });
 
-      const ebayData = response.data;
-      const newPriceValue = ebayData.price.value;
+        const ebayData = response.data;
+        const newPriceValue = parseFloat(ebayData.price.value);
 
-      const product = await this.productRepository.findOne({ where: { id: itemId } });
+        const oldRatioPrice = await this.settingService.getRatioPrice();
 
-      if (product) {
-        if (!Array.isArray(product.price)) {
-          product.price = [];
-        }
-        const lastPriceEntry = product.price[product.price.length - 1];
-        const lastPrice = lastPriceEntry ? lastPriceEntry.value : null;
-        if (lastPrice !== newPriceValue) {
-          const priceUpdate = {
-            lastUpdated: new Date(),
-            value: newPriceValue
-          };
-          product.price.push(priceUpdate);
-          await this.productRepository.save(product);
-        }
+        const newPrice = newPriceValue * oldRatioPrice + 1300;
+
+        const product = await this.productRepository.findOne({ where: { id: itemId } });
+
+        if (product) {
+          if (!Array.isArray(product.price)) {
+              product.price = [];
+          }
+          const lastPriceEntry = product.price[product.price.length - 1];
+          const lastPrice = lastPriceEntry ? lastPriceEntry.value : null;
+          
+          if (!isNaN(newPriceValue)) {
+              if (lastPrice !== newPrice) {
+                  const priceUpdate = {
+                      lastUpdated: new Date(),
+                      value: newPrice
+                  };
+                  product.price.push(priceUpdate);
+                  await this.productRepository.save(product);
+              }
+          } else {
+              console.error(`Invalid current price for product with ID ${itemId}`);
+          }
+      } else {
+          console.error(`Product with ID ${itemId} not found in the database`);
       }
 
-      return ebayData;
+        // Translate data into English
+        const translatedName = ebayData.title ? await this.translationService.translateText(ebayData.title, 'vi') : ebayData.title;
+        const translatedShortDescription = ebayData.shortDescription ? await this.translationService.translateText(ebayData.shortDescription, 'vi') : ebayData.shortDescription;
+        const translatedDescription = ebayData.description ? await this.translationService.translateText(ebayData.description, 'vi') : ebayData.description;
+        const translatedConditionDescription = ebayData.conditionDescription ? await this.translationService.translateText(ebayData.conditionDescription, 'vi') : ebayData.conditionDescription;
+        
+        return {
+            ...ebayData,
+            title: translatedName,
+            shortDescription: translatedShortDescription,
+            description: translatedDescription,
+            conditionDescription: translatedConditionDescription,
+            price: {
+              lastUpdated: new Date(),
+              value: newPrice
+          }
+        };
     } catch (error) {
-      throw error;
+        throw error;
     }
-  }
+}
 
   async searchItemById(itemId: string): Promise<any> {
     try {
