@@ -8,10 +8,12 @@ import { ProductEntity } from './entities';
 import { GoogleTranslateService } from './translation.service';
 import { CategoryService } from '../Category/category.service';
 import { Category } from 'src/Category/entities';
+import { SettingService } from 'src/setting/setting.service';
+import { Setting } from 'src/setting/entities';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ProductEntity, Category]), ConfigModule.forRoot()],
+  imports: [TypeOrmModule.forFeature([ProductEntity, Category, Setting]), ConfigModule.forRoot()],
   controllers: [EbayController],
-  providers: [EbayService, EbayAuthService, GoogleTranslateService, CategoryService],
+  providers: [EbayService, EbayAuthService, GoogleTranslateService, CategoryService, SettingService],
 })
 export class EbayModule {}

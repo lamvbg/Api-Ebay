@@ -9,6 +9,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { OrderModule } from './order/order.module';
 import { CategoryModule } from './Category/category.module';
+import { SettingModule } from './setting/setting.module';
 // import { AuthMiddleware } from './auth/authMiddleWare';
 
 @Module({
@@ -19,6 +20,7 @@ import { CategoryModule } from './Category/category.module';
     DatabaseModule,
     OrderModule,
     CategoryModule,
+    SettingModule,
     JwtModule.register({
       secret: 'your-secret-key',
       signOptions: { expiresIn: '24h' },

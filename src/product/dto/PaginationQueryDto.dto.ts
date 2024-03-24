@@ -18,4 +18,6 @@ export class PaginationQueryDto {
   category?: string;
 
   marketingPrice? : string[];
+
+  condition?: string
 }

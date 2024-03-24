@@ -9,35 +9,34 @@ import { PaginationQueryDto } from './dto/PaginationQueryDto.dto';
 import { PaginatedProductsResultDto } from './dto/PaginatedProductsResultDto.dto';
 import { GoogleTranslateService } from './translation.service';
 import { CategoryService } from 'src/Category/category.service';
+import { SettingService } from 'src/setting/setting.service';
 
 @Injectable()
 export class EbayService {
   private readonly ebayApiUrl = 'https://api.ebay.com/buy/browse/v1/item_summary/search';
 
   constructor(
-    private readonly ebayAuthService: EbayAuthService,
     @InjectRepository(ProductEntity)
     private readonly productRepository: Repository<ProductEntity>,
+    private readonly ebayAuthService: EbayAuthService,
     private readonly translationService: GoogleTranslateService,
     private categoryService: CategoryService,
+    private settingService: SettingService
   ) { }
 
   async searchItems(categoryEnglishName: string): Promise<any> {
     try {
       const accessToken = await this.ebayAuthService.getAccessToken();
-
       const response = await axios.get(`${this.ebayApiUrl}?q=${categoryEnglishName}&limit=50`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-
       const itemSummaries = response.data.itemSummaries;
 
       for (const itemSummary of itemSummaries) {
         const itemId = itemSummary.itemId;
-        const newPriceValue = parseFloat(itemSummary.price.value); // Giả sử giá mới là số
-
+        const newPriceValue = parseFloat(itemSummary.price.value);
         const existingProduct = await this.productRepository.findOne({ where: { id: itemId } });
 
         if (!existingProduct) {
@@ -51,10 +50,14 @@ export class EbayService {
           }
           newProduct.category = category;
 
+          const oldRatioPrice = await this.settingService.getRatioPrice()
+          const newPrice = newPriceValue * oldRatioPrice + 1300;
+
           const newPriceEntry = {
             lastUpdated: new Date(),
-            value: newPriceValue
+            value: newPrice
           };
+
           newProduct.price = [newPriceEntry];
 
           newProduct.additionalImages = itemSummary.additionalImages;
@@ -73,13 +76,20 @@ export class EbayService {
           const lastPriceEntry = existingProduct.price[existingProduct.price.length - 1];
           const lastPrice = lastPriceEntry ? lastPriceEntry.value : null;
 
-          if (lastPrice !== newPriceValue) {
-            const priceUpdate = {
-              lastUpdated: new Date(),
-              value: newPriceValue
-            };
-            existingProduct.price.push(priceUpdate);
-            await this.productRepository.save(existingProduct);
+          if (!isNaN(newPriceValue)) {
+            const oldRatioPrice = await this.settingService.getRatioPrice()
+            const newPrice = newPriceValue * oldRatioPrice + 1300;
+
+            if (lastPrice !== newPrice) {
+              const priceUpdate = {
+                lastUpdated: new Date(),
+                value: newPrice
+              };
+              existingProduct.price.push(priceUpdate);
+              await this.productRepository.save(existingProduct);
+            }
+          } else {
+            console.error(`Invalid current price or ratio price for product with ID ${itemId}`);
           }
         }
       }
@@ -89,6 +99,7 @@ export class EbayService {
       throw error;
     }
   }
+
 
   async getItemAndUpdatePrice(itemId: string): Promise<any> {
     try {
@@ -111,8 +122,6 @@ export class EbayService {
         }
         const lastPriceEntry = product.price[product.price.length - 1];
         const lastPrice = lastPriceEntry ? lastPriceEntry.value : null;
-
-        // So sánh giá trị giá mới
         if (lastPrice !== newPriceValue) {
           const priceUpdate = {
             lastUpdated: new Date(),
@@ -129,43 +138,89 @@ export class EbayService {
     }
   }
 
-
   async searchItemById(itemId: string): Promise<any> {
     try {
-      const accessToken = await this.ebayAuthService.getAccessToken();
+        const accessToken = await this.ebayAuthService.getAccessToken();
 
-      const xmlBody = `
-    <?xml version="1.0" encoding="utf-8"?>
-    <GetSingleItemRequest xmlns="urn:ebay:apis:eBLBaseComponents">
-      <ItemID>${itemId}</ItemID>
-    </GetSingleItemRequest>
-    `;
+        const xmlBody = `
+        <?xml version="1.0" encoding="utf-8"?>
+        <GetSingleItemRequest xmlns="urn:ebay:apis:eBLBaseComponents">
+            <ItemID>${itemId}</ItemID>
+        </GetSingleItemRequest>
+        `;
 
-      const response = await axios.post('https://open.api.ebay.com/shopping', xmlBody, {
-        headers: {
-          'Content-Type': 'application/xml',
-          'X-EBAY-API-IAF-TOKEN': `Bearer ${accessToken}`,
-          'X-EBAY-API-SITE-ID': '0',
-          'X-EBAY-API-CALL-NAME': 'GetSingleItem',
-          'X-EBAY-API-VERSION': '863',
-          'X-EBAY-API-REQUEST-ENCODING': 'xml'
-        },
-      });
+        const response = await axios.post('https://open.api.ebay.com/shopping', xmlBody, {
+            headers: {
+                'Content-Type': 'application/xml',
+                'X-EBAY-API-IAF-TOKEN': `Bearer ${accessToken}`,
+                'X-EBAY-API-SITE-ID': '0',
+                'X-EBAY-API-CALL-NAME': 'GetSingleItem',
+                'X-EBAY-API-VERSION': '863',
+                'X-EBAY-API-REQUEST-ENCODING': 'xml'
+            },
+        });
 
-      const result = await parseStringPromise(response.data, { explicitArray: false, ignoreAttrs: true });
+        const result = await parseStringPromise(response.data, { explicitArray: false, ignoreAttrs: true });
 
-      // Modify according to actual response structure
-      const item = result.GetSingleItemResponse?.Item;
+        const item = result.GetSingleItemResponse?.Item;
 
-      return item;
+        const newPriceValue = parseFloat(item?.ConvertedCurrentPrice);
+
+        if (item && !isNaN(newPriceValue)) {
+            let existingProduct = await this.productRepository.findOne({ where: { id: itemId } });
+
+            if (!existingProduct) {
+                existingProduct = new ProductEntity();
+                existingProduct.id = itemId;
+            }
+
+            existingProduct.name = item.Title;
+            existingProduct.itemWebUrl = item.ViewItemURLForNaturalSearch;
+            existingProduct.itemLocation = item.Location;
+            existingProduct.thumbnailImages = item.PictureURL;
+            existingProduct.condition = item.ConditionDisplayName;
+            const oldRatioPrice = await this.settingService.getRatioPrice();
+            const newPrice = newPriceValue * oldRatioPrice + 1300;
+            const priceUpdate = {
+                lastUpdated: new Date(),
+                value: newPrice
+            };
+            existingProduct.price = [priceUpdate];
+
+            await this.productRepository.save(existingProduct);
+        } else {
+            console.error(`Invalid item data or price for item with ID ${itemId}`);
+        }
+
+        return item;
     } catch (error) {
-      console.error('Error fetching item by ID:', error);
-      throw new Error('Failed to fetch item');
+        console.error('Error fetching item by ID:', error);
+        throw new Error('Failed to fetch item');
     }
-  }
+}
+
+
+
+
+  async updatePricesAccordingToRatio(ratioPrice: number, oldRatioPrice: number | null): Promise<void> {
+    const products = await this.productRepository.find();
+
+    await Promise.all(products.map(async product => {
+        const initialPrice = product.price[0].value;
+
+        const usedOldRatioPrice = oldRatioPrice !== null ? oldRatioPrice : ratioPrice;
+
+        const newPrice = ((initialPrice - 1300) / usedOldRatioPrice) * ratioPrice + 1300;
+        product.price[0].value = newPrice;
+        await this.productRepository.save(product);
+        console.log(ratioPrice);
+        console.log(oldRatioPrice);
+    }));
+}
+
 
   async findAll(paginationQuery: PaginationQueryDto): Promise<PaginatedProductsResultDto> {
-    let { page, limit, minPrice, maxPrice, category, marketingPrice } = paginationQuery;
+    let { page, limit, minPrice, maxPrice, category, marketingPrice, condition } = paginationQuery;
 
     page = Number(page);
     limit = Number(limit);
@@ -181,7 +236,6 @@ export class EbayService {
 
     const offset = (page - 1) * limit;
 
-    // Xây dựng điều kiện lọc theo giá
     const queryBuilder = this.productRepository.createQueryBuilder('product');
 
     if (Number.isFinite(minPrice)) {
@@ -201,6 +255,10 @@ export class EbayService {
       queryBuilder.andWhere("product.marketingPrice IS NOT NULL");
     }
 
+    if (condition) {
+      queryBuilder.andWhere("product.condition = :condition", { condition });
+    }
+
     const [data, totalCount] = await Promise.all([
       queryBuilder
         .leftJoinAndSelect("product.category", "category")
@@ -213,8 +271,8 @@ export class EbayService {
 
     const translatedData = await Promise.all(data.map(async product => {
       const translatedName = await this.translationService.translateText(product.name, 'vi');
-      const translatedCondition = await this.translationService.translateText(product.condition, 'vi');
-      return { ...product, name: translatedName, condition: translatedCondition };
+      // const translatedCondition = await this.translationService.translateText(product.condition, 'vi');
+      return { ...product, name: translatedName };
     }));
 
 
