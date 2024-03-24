@@ -187,9 +187,6 @@ export class EbayService {
     }
 }
 
-
-
-
   async updatePricesAccordingToRatio(ratioPrice: number, oldRatioPrice: number | null): Promise<void> {
     const products = await this.productRepository.find();
 
