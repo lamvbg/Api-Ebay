@@ -167,32 +167,20 @@ export class EbayService {
         const newPriceValue = parseFloat(item?.ConvertedCurrentPrice);
 
         if (item && !isNaN(newPriceValue)) {
-            let existingProduct = await this.productRepository.findOne({ where: { id: itemId } });
-
-            if (!existingProduct) {
-                existingProduct = new ProductEntity();
-                existingProduct.id = itemId;
-            }
-
-            existingProduct.name = item.Title;
-            existingProduct.itemWebUrl = item.ViewItemURLForNaturalSearch;
-            existingProduct.itemLocation = item.Location;
-            existingProduct.thumbnailImages = item.PictureURL;
-            existingProduct.condition = item.ConditionDisplayName;
-            const oldRatioPrice = await this.settingService.getRatioPrice();
+          const oldRatioPrice = await this.settingService.getRatioPrice();
             const newPrice = newPriceValue * oldRatioPrice + 1300;
-            const priceUpdate = {
-                lastUpdated: new Date(),
-                value: newPrice
+            return {
+                name: item.Title,
+                itemWebUrl: item.ViewItemURLForNaturalSearch,
+                itemLocation: item.Location,
+                thumbnailImages: item.PictureURL,
+                condition: item.ConditionDisplayName,
+                price: newPrice
             };
-            existingProduct.price = [priceUpdate];
-
-            await this.productRepository.save(existingProduct);
         } else {
             console.error(`Invalid item data or price for item with ID ${itemId}`);
+            throw new Error(`Invalid item data or price for item with ID ${itemId}`);
         }
-
-        return item;
     } catch (error) {
         console.error('Error fetching item by ID:', error);
         throw new Error('Failed to fetch item');
