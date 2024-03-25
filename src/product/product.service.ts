@@ -132,32 +132,15 @@ export class EbayService {
       });
 
       const ebayData = response.data;
-      const newPriceValue = parseFloat(ebayData.price.value);
-      const newOriginalPrice = ebayData.marketingPrice && ebayData.marketingPrice.originalPrice ? parseFloat(ebayData.marketingPrice.originalPrice.value) : 0;
-      const newDiscountAmount = ebayData.marketingPrice && ebayData.marketingPrice.discountAmount ? parseFloat(ebayData.marketingPrice.discountAmount.value) : 0;
-      const discountPercentage = ebayData.marketingPrice ? parseFloat(ebayData.marketingPrice.discountPercentage) : 0;
-      const priceTreatment = ebayData.marketingPrice ? parseFloat(ebayData.marketingPrice.priceTreatment) : 0;
+      const newPriceValue = parseFloat(ebayData.price.value)
 
       const oldRatioPrice = await this.settingService.getRatioPrice();
 
       const newPrice = newPriceValue * oldRatioPrice + 1300;
-      const newOriginal = newOriginalPrice * oldRatioPrice;
-      const newDiscount = newDiscountAmount * oldRatioPrice;
-
-      const newMarketingPriceEntry = {
-        originalPrice: {
-          value: newOriginal.toFixed(2),
-          currency: "VND",
-        },
-        discountPercentage: discountPercentage.toFixed(2),
-        discountAmount: {
-          value: newDiscount.toFixed(2),
-          currency: "VND",
-        },
-        priceTreatment: priceTreatment.toFixed(2),
-      };
 
       const product = await this.productRepository.findOne({ where: { id: itemId } });
+
+      const newMarketingPrice = product.marketingPrice;
 
       if (product) {
         if (!Array.isArray(product.price)) {
@@ -203,7 +186,7 @@ export class EbayService {
           lastUpdated: new Date(),
           value: newPrice
         },
-        marketingPrice: newMarketingPriceEntry,
+        marketingPrice: newMarketingPrice,
         localizedAspects: localizedAspectsUpdate
       };
     } catch (error) {
