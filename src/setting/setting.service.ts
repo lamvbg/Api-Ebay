@@ -7,6 +7,7 @@ import { EbayService } from '../product/product.service'; // Import EbayService
 @Injectable()
 export class SettingService {
   private oldRatioPrice: number | null = null;
+  private oldRatioDiscount: number | null = null;
   constructor(
     @InjectRepository(Setting)
     private readonly settingRepository: Repository<Setting>,
@@ -23,13 +24,13 @@ export class SettingService {
   }
 
   async update(updatedSetting: Partial<Setting>, oldRatioPrice: number): Promise<Setting> {
-    // Cập nhật setting với các giá trị mới
     const existingSetting = await this.settingRepository.findOne({ where: {} });
     const mergedSetting = this.settingRepository.merge(existingSetting, updatedSetting);
     const updatedSettingEntity = await this.settingRepository.save(mergedSetting);
 
-    // Gọi hàm updatePricesAccordingToRatio với giá trị cũ và mới của ratioPrice
     await this.ebayService.updatePricesAccordingToRatio(updatedSettingEntity.ratioPrice, oldRatioPrice);
+
+    // await this.ebayService.updatePricesAccordingToRatioDiscount(updatedSettingEntity.ratioDiscount);
 
     return updatedSettingEntity;
 }

@@ -37,6 +37,11 @@ export class EbayService {
       for (const itemSummary of itemSummaries) {
         const itemId = itemSummary.itemId;
         const newPriceValue = parseFloat(itemSummary.price.value);
+        const newOriginalPrice = itemSummary.marketingPrice && itemSummary.marketingPrice.originalPrice ? parseFloat(itemSummary.marketingPrice.originalPrice.value) : 0;
+        const newDiscountAmount = itemSummary.marketingPrice && itemSummary.marketingPrice.discountAmount ? parseFloat(itemSummary.marketingPrice.discountAmount.value) : 0;
+        const discountPercentage = itemSummary.marketingPrice ? parseFloat(itemSummary.marketingPrice.discountPercentage) : 0;
+        const priceTreatment = itemSummary.marketingPrice ? parseFloat(itemSummary.marketingPrice.priceTreatment) : 0;
+
         const existingProduct = await this.productRepository.findOne({ where: { id: itemId } });
 
         if (!existingProduct) {
@@ -52,11 +57,26 @@ export class EbayService {
 
           const oldRatioPrice = await this.settingService.getRatioPrice()
           const newPrice = newPriceValue * oldRatioPrice + 1300;
+          const newOriginal = newOriginalPrice * oldRatioPrice;
+          const newDiscount = newDiscountAmount * oldRatioPrice;
 
           const newPriceEntry = {
             lastUpdated: new Date(),
             value: newPrice
           };
+
+          const newMarketingPriceEntry = itemSummary.marketingPrice ? {
+            originalPrice: {
+              value: newOriginal.toFixed(2),
+              currency: "VND",
+            },
+            discountPercentage: discountPercentage.toFixed(2),
+            discountAmount: {
+              value: newDiscount.toFixed(2),
+              currency: "VND",
+            },
+            priceTreatment: priceTreatment.toFixed(2),
+          } : undefined;
 
           newProduct.price = [newPriceEntry];
 
@@ -66,7 +86,7 @@ export class EbayService {
           newProduct.seller = itemSummary.seller;
           newProduct.itemWebUrl = itemSummary.itemWebUrl;
           newProduct.itemLocation = itemSummary.itemLocation;
-          newProduct.marketingPrice = itemSummary.marketingPrice;
+          newProduct.marketingPrice = newMarketingPriceEntry;
 
           await this.productRepository.save(newProduct);
         } else {
@@ -103,129 +123,208 @@ export class EbayService {
 
   async getItemAndUpdatePrice(itemId: string): Promise<any> {
     try {
-        const accessToken = await this.ebayAuthService.getAccessToken();
+      const accessToken = await this.ebayAuthService.getAccessToken();
 
-        const response = await axios.get(`https://api.ebay.com/buy/browse/v1/item/${itemId}`, {
-            headers: {
-                Authorization: `Bearer ${accessToken}`,
-            },
-        });
+      const response = await axios.get(`https://api.ebay.com/buy/browse/v1/item/${itemId}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
 
-        const ebayData = response.data;
-        const newPriceValue = parseFloat(ebayData.price.value);
+      const ebayData = response.data;
+      const newPriceValue = parseFloat(ebayData.price.value);
+      const newOriginalPrice = ebayData.marketingPrice && ebayData.marketingPrice.originalPrice ? parseFloat(ebayData.marketingPrice.originalPrice.value) : 0;
+      const newDiscountAmount = ebayData.marketingPrice && ebayData.marketingPrice.discountAmount ? parseFloat(ebayData.marketingPrice.discountAmount.value) : 0;
+      const discountPercentage = ebayData.marketingPrice ? parseFloat(ebayData.marketingPrice.discountPercentage) : 0;
+      const priceTreatment = ebayData.marketingPrice ? parseFloat(ebayData.marketingPrice.priceTreatment) : 0;
 
-        const oldRatioPrice = await this.settingService.getRatioPrice();
+      const oldRatioPrice = await this.settingService.getRatioPrice();
 
-        const newPrice = newPriceValue * oldRatioPrice + 1300;
+      const newPrice = newPriceValue * oldRatioPrice + 1300;
+      const newOriginal = newOriginalPrice * oldRatioPrice;
+      const newDiscount = newDiscountAmount * oldRatioPrice;
 
-        const product = await this.productRepository.findOne({ where: { id: itemId } });
+      const newMarketingPriceEntry = {
+        originalPrice: {
+          value: newOriginal.toFixed(2),
+          currency: "VND",
+        },
+        discountPercentage: discountPercentage.toFixed(2),
+        discountAmount: {
+          value: newDiscount.toFixed(2),
+          currency: "VND",
+        },
+        priceTreatment: priceTreatment.toFixed(2),
+      };
 
-        if (product) {
-            if (!Array.isArray(product.price)) {
-                product.price = [];
-            }
-            const lastPriceEntry = product.price[product.price.length - 1];
-            const lastPrice = lastPriceEntry ? lastPriceEntry.value : null;
+      const product = await this.productRepository.findOne({ where: { id: itemId } });
 
-            if (!isNaN(newPriceValue) && lastPrice !== newPrice) {
-                const priceUpdate = {
-                    lastUpdated: new Date(),
-                    value: newPrice
-                };
-                product.price.push(priceUpdate);
-                await this.productRepository.save(product);
-            }
-        } else {
-            console.error(`Product with ID ${itemId} not found in the database`);
+      if (product) {
+        if (!Array.isArray(product.price)) {
+          product.price = [];
         }
+        const lastPriceEntry = product.price[product.price.length - 1];
+        const lastPrice = lastPriceEntry ? lastPriceEntry.value : null;
 
-        // Translate data into English
-        const translatedName = ebayData.title ? await this.translationService.translateText(ebayData.title, 'vi') : ebayData.title;
-        const translatedShortDescription = ebayData.shortDescription ? await this.translationService.translateText(ebayData.shortDescription, 'vi') : ebayData.shortDescription;
-        const translatedDescription = ebayData.description ? await this.translationService.translateText(ebayData.description, 'vi') : ebayData.description;
-        const translatedConditionDescription = ebayData.conditionDescription ? await this.translationService.translateText(ebayData.conditionDescription, 'vi') : ebayData.conditionDescription;
+        if (!isNaN(newPriceValue) && lastPrice !== newPrice) {
+          const priceUpdate = {
+            lastUpdated: new Date(),
+            value: newPrice
+          };
+          product.price.push(priceUpdate);
+          await this.productRepository.save(product);
+        }
+      } else {
+        console.error(`Product with ID ${itemId} not found in the database`);
+      }
 
-        return {
-            ...ebayData,
-            title: translatedName,
-            shortDescription: translatedShortDescription,
-            description: translatedDescription,
-            conditionDescription: translatedConditionDescription,
-            price: {
-                lastUpdated: new Date(),
-                value: newPrice
-            }
-        };
+      // Translate data into English
+      const translatedName = ebayData.title ? await this.translationService.translateText(ebayData.title, 'vi') : ebayData.title;
+      const translatedShortDescription = ebayData.shortDescription ? await this.translationService.translateText(ebayData.shortDescription, 'vi') : ebayData.shortDescription;
+      const translatedDescription = ebayData.description ? await this.translationService.translateText(ebayData.description, 'vi') : ebayData.description;
+      const translatedConditionDescription = ebayData.conditionDescription ? await this.translationService.translateText(ebayData.conditionDescription, 'vi') : ebayData.conditionDescription;
+      const localizedAspectsUpdate = [];
+      for (const aspect of ebayData.localizedAspects) {
+          const translationName = aspect.name ? await this.translationService.translateText(aspect.name, 'vi') : aspect.name;
+          const translationValue = aspect.value ? await this.translationService.translateText(aspect.value, 'vi') : aspect.value;
+          localizedAspectsUpdate.push({
+              type: aspect.type,
+              name: translationName,
+              value: translationValue
+          });
+      }
+      return {
+        ...ebayData,
+        title: translatedName,
+        shortDescription: translatedShortDescription,
+        description: translatedDescription,
+        conditionDescription: translatedConditionDescription,
+        price: {
+          lastUpdated: new Date(),
+          value: newPrice
+        },
+        marketingPrice: newMarketingPriceEntry,
+        localizedAspects: localizedAspectsUpdate
+      };
     } catch (error) {
-        throw error;
+      throw error;
     }
-}
+  }
 
   async searchItemById(itemId: string): Promise<any> {
     try {
-        const accessToken = await this.ebayAuthService.getAccessToken();
+      const accessToken = await this.ebayAuthService.getAccessToken();
 
-        const xmlBody = `
+      const xmlBody = `
         <?xml version="1.0" encoding="utf-8"?>
         <GetSingleItemRequest xmlns="urn:ebay:apis:eBLBaseComponents">
             <ItemID>${itemId}</ItemID>
         </GetSingleItemRequest>
         `;
 
-        const response = await axios.post('https://open.api.ebay.com/shopping', xmlBody, {
-            headers: {
-                'Content-Type': 'application/xml',
-                'X-EBAY-API-IAF-TOKEN': `Bearer ${accessToken}`,
-                'X-EBAY-API-SITE-ID': '0',
-                'X-EBAY-API-CALL-NAME': 'GetSingleItem',
-                'X-EBAY-API-VERSION': '863',
-                'X-EBAY-API-REQUEST-ENCODING': 'xml'
-            },
-        });
+      const response = await axios.post('https://open.api.ebay.com/shopping', xmlBody, {
+        headers: {
+          'Content-Type': 'application/xml',
+          'X-EBAY-API-IAF-TOKEN': `Bearer ${accessToken}`,
+          'X-EBAY-API-SITE-ID': '0',
+          'X-EBAY-API-CALL-NAME': 'GetSingleItem',
+          'X-EBAY-API-VERSION': '863',
+          'X-EBAY-API-REQUEST-ENCODING': 'xml'
+        },
+      });
 
-        const result = await parseStringPromise(response.data, { explicitArray: false, ignoreAttrs: true });
+      const result = await parseStringPromise(response.data, { explicitArray: false, ignoreAttrs: true });
 
-        const item = result.GetSingleItemResponse?.Item;
+      const item = result.GetSingleItemResponse?.Item;
 
-        const newPriceValue = parseFloat(item?.ConvertedCurrentPrice);
+      const newPriceValue = parseFloat(item?.ConvertedCurrentPrice);
 
-        if (item && !isNaN(newPriceValue)) {
-          const oldRatioPrice = await this.settingService.getRatioPrice();
-            const newPrice = newPriceValue * oldRatioPrice + 1300;
-            return {
-                name: item.Title,
-                itemWebUrl: item.ViewItemURLForNaturalSearch,
-                itemLocation: item.Location,
-                thumbnailImages: item.PictureURL,
-                condition: item.ConditionDisplayName,
-                price: newPrice
-            };
-        } else {
-            console.error(`Invalid item data or price for item with ID ${itemId}`);
-            throw new Error(`Invalid item data or price for item with ID ${itemId}`);
-        }
+      if (item && !isNaN(newPriceValue)) {
+        const oldRatioPrice = await this.settingService.getRatioPrice();
+        const newPrice = newPriceValue * oldRatioPrice + 1300;
+        return {
+          name: item.Title,
+          itemWebUrl: item.ViewItemURLForNaturalSearch,
+          itemLocation: item.Location,
+          thumbnailImages: item.PictureURL,
+          condition: item.ConditionDisplayName,
+          price: newPrice
+        };
+      } else {
+        console.error(`Invalid item data or price for item with ID ${itemId}`);
+        throw new Error(`Invalid item data or price for item with ID ${itemId}`);
+      }
     } catch (error) {
-        console.error('Error fetching item by ID:', error);
-        throw new Error('Failed to fetch item');
+      console.error('Error fetching item by ID:', error);
+      throw new Error('Failed to fetch item');
     }
-}
+  }
 
   async updatePricesAccordingToRatio(ratioPrice: number, oldRatioPrice: number | null): Promise<void> {
     const products = await this.productRepository.find();
 
     await Promise.all(products.map(async product => {
-        const initialPrice = product.price[0].value;
+      const initialPrice = product.price[0].value;
 
-        const usedOldRatioPrice = oldRatioPrice !== null ? oldRatioPrice : ratioPrice;
+      const usedOldRatioPrice = oldRatioPrice !== null ? oldRatioPrice : ratioPrice;
 
-        const newPrice = ((initialPrice - 1300) / usedOldRatioPrice) * ratioPrice + 1300;
-        product.price[0].value = newPrice;
-        await this.productRepository.save(product);
-        console.log(ratioPrice);
-        console.log(oldRatioPrice);
+      const newPrice = ((initialPrice - 1300) / usedOldRatioPrice) * ratioPrice + 1300;
+      product.price[0].value = newPrice;
+
+      if (product.marketingPrice) {
+        const originalPrice = parseFloat(product.marketingPrice.originalPrice.value);
+        const discountAmount = parseFloat(product.marketingPrice.discountAmount.value);
+
+        const newOriginalPrice = (originalPrice / usedOldRatioPrice) * ratioPrice;
+        const newDiscountAmount = (discountAmount / usedOldRatioPrice) * ratioPrice;
+
+        product.marketingPrice.originalPrice.value = newOriginalPrice.toFixed(2).toString();
+        product.marketingPrice.discountAmount.value = newDiscountAmount.toFixed(2).toString();
+      } else {
+        console.error(`Incomplete or missing marketingPrice data for product with ID ${product.id}`);
+      }
+      await this.productRepository.save(product);
+      console.log(usedOldRatioPrice);
+      console.log(ratioPrice);
     }));
-}
+  }
 
+
+
+  async updatePricesAccordingToRatioDiscount(ratioDiscount: number): Promise<void> {
+    try {
+      const products = await this.productRepository.find();
+
+      for (const product of products) {
+        if (product.marketingPrice) {
+          if (product.marketingPrice.originalPrice && product.marketingPrice.discountAmount) {
+            const originalPrice = parseFloat(product.marketingPrice.originalPrice.value);
+            const discountAmount = parseFloat(product.marketingPrice.discountAmount.value);
+
+            const newOriginalPrice = originalPrice * ratioDiscount;
+            const newDiscountAmount = discountAmount * ratioDiscount;
+
+            product.marketingPrice.originalPrice.value = newOriginalPrice.toFixed(2).toString();
+            product.marketingPrice.discountAmount.value = newDiscountAmount.toFixed(2).toString();
+
+            await this.productRepository.save(product);
+          } else {
+
+            console.error(`Incomplete marketingPrice data for product with ID ${product.id}`);
+          }
+        } else {
+
+          console.error(`Missing marketingPrice data for product with ID ${product.id}`);
+        }
+      }
+
+      // Hiển thị thông báo khi hoàn thành cập nhật giá
+      console.log('Prices updated according to the new discount ratio:', ratioDiscount);
+    } catch (error) {
+      // Ném lỗi nếu có lỗi xảy ra trong quá trình cập nhật
+      throw error;
+    }
+  }
 
   async findAll(paginationQuery: PaginationQueryDto): Promise<PaginatedProductsResultDto> {
     let { page, limit, minPrice, maxPrice, category, marketingPrice, condition } = paginationQuery;

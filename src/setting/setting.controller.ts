@@ -18,8 +18,8 @@ export class SettingController {
 
   @Put()
   async update(@Body() updatedSetting: Partial<Setting>): Promise<Setting> {
-    const existingSetting = await this.settingService.findOne(); // Lấy setting hiện tại từ database
-    const oldRatioPrice = existingSetting ? existingSetting.ratioPrice : null; // Lấy giá trị cũ của ratioPrice
+    const existingSetting = await this.settingService.findOne(); 
+    const oldRatioPrice = existingSetting ? existingSetting.ratioPrice : null;
 
     return this.settingService.update(updatedSetting, oldRatioPrice); // Truyền giá trị cũ của ratioPrice vào phương thức update của SettingService
   }
