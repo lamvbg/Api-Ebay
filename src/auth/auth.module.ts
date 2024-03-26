@@ -6,18 +6,20 @@ import { AuthService } from './auth.service';
 import { GoogleStrategy } from './utils/google.strategy';
 import { FacebookStrategy } from './utils/facebook.strategy';
 import { JwtModule } from '@nestjs/jwt';
+import { JwtStrategy } from './utils/jwt.strategy';
 
 @Module({
   imports: [TypeOrmModule.forFeature([UserEntity]),
   JwtModule.register({
-    secret: 'your-secret-key',
+    secret: 'asiodasjoddjdoasddasoidjasiodasdjaiodd',
     signOptions: { expiresIn: '24h' },
   }),],
   controllers: [AuthController],
   providers: [
     GoogleStrategy,
     FacebookStrategy,
-    AuthService
+    AuthService,
+    JwtStrategy
   ],
 })
 export class AuthModule {}

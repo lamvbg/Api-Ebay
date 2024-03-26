@@ -30,10 +30,10 @@ export class AuthService {
     return user;
   }
 
-  async findUser(email: string) {
-    const user = await this.userRepository.findOne({ where: { email } });
-    return user;
+  async findUserById(id: number): Promise<UserEntity | undefined> {
+    return await this.userRepository.findOne({where: {id}});
   }
+  
   async validateUserFromFacebook(details: UserDetails) {
     const email = details.email; 
     let user = await this.userRepository.findOne({ where: { email: email } });
@@ -51,20 +51,25 @@ export class AuthService {
   async validateUserFromToken(token: string): Promise<UserEntity> {
     try {
       const decodedToken = this.jwtService.verify(token);
+      
+      if (!decodedToken || !decodedToken.id) {
+        throw new UnauthorizedException('Invalid token');
+      }
       const user = await this.userRepository.findOne({
         where: { id: decodedToken.id },
       });
-
+  
       if (!user) {
-        throw new UnauthorizedException('Invalid token');
+        throw new UnauthorizedException('User not found');
       }
-
+  
       return user;
     } catch (error) {
-      throw new UnauthorizedException('Invalid token');
+      // Xử lý lỗi decode token
+      if (error.name === 'JsonWebTokenError') {
+        throw new UnauthorizedException('Invalid token');
+      }
+      throw error; // Ném lại lỗi để NestJS xử lý
     }
   }
-
-  
-
 }

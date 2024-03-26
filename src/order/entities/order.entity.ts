@@ -21,6 +21,12 @@ export class OrderEntity {
   @Column()
   totalPrice: number;
 
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  shippingFee: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  warrantyFee: number;
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 }

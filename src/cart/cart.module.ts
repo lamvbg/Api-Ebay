@@ -5,10 +5,16 @@ import { CartService } from './cart.service';
 import { CartEntity } from './entities';
 import { ProductEntity } from 'src/product/entities';
 import { UserEntity } from 'src/user/entities';
+import { JwtStrategy } from 'src/auth/utils/jwt.strategy';
+import { AuthService } from 'src/auth/auth.service';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([CartEntity, ProductEntity, UserEntity])],
+  imports: [TypeOrmModule.forFeature([CartEntity, ProductEntity, UserEntity]),JwtModule.register({
+    secret: 'asiodasjoddjdoasddasoidjasiodasdjaiodd',
+    signOptions: { expiresIn: '24h' },
+  })],
   controllers: [CartController],
-  providers: [CartService],
+  providers: [CartService, JwtStrategy, AuthService],
 })
 export class CartModule {}

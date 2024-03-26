@@ -28,7 +28,7 @@ export class OrderService {
   }  
 
   async create(orderDto: OrderDto): Promise<OrderEntity> {
-    const { productId, quantity, totalPrice, createdAt, userId } = orderDto;
+    const { productId, quantity, totalPrice, createdAt, userId, shippingFee, warrantyFee } = orderDto;
 
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
@@ -44,6 +44,8 @@ export class OrderService {
         user, // Assigning user object directly
         product,
         quantity: quantity || 1,
+        shippingFee,
+        warrantyFee,
         totalPrice,
         createdAt
     });

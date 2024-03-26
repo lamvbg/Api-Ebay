@@ -1,10 +1,12 @@
-import { Controller, Get, Redirect, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, NotFoundException, Redirect, Req, Res, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { JWTAuthGuard } from './utils/Guards';
-import { JAuthGuard } from './authMiddleWare';
+import { JAuthGuard } from './utils/authMiddleWare';
+import { AuthService } from './auth.service';
 
 @Controller('auth')
 export class AuthController {
+  constructor(private readonly authService: AuthService) {}
   // Google authentication routes
   @Get('google/login')
   @UseGuards(JWTAuthGuard)
@@ -20,8 +22,13 @@ export class AuthController {
 
   @Get('profile')
   @UseGuards(JAuthGuard)
-  getProfile(@Req() request) {
-    return request.user; 
+  async findUserProfile(@Req() request) {
+    const userId = request.user.sub;
+    const user = await this.authService.findUserById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 
   // Facebook authentication routes
