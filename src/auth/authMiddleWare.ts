@@ -1,24 +1,12 @@
-// import { Injectable, NestMiddleware } from '@nestjs/common';
-// import { Request, Response, NextFunction } from 'express';
-// import { AuthService } from './auth.service';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 
-// @Injectable()
-// export class AuthMiddleware implements NestMiddleware {
-//   constructor(private readonly authService: AuthService) {}
-
-//   async use(req: Request, res: Response, next: NextFunction) {
-//     const token = req.headers.authorization?.split(' ')[1];
-
-//     if (token) {
-//       try {
-//         const user = await this.authService.validateUserFromToken(token);
-//         req.user = user; 
-//         next();
-//       } catch (error) {
-//         res.status(401).json({ message: 'Unauthorized' });
-//       }
-//     } else {
-//       res.status(401).json({ message: 'Unauthorized' });
-//     }
-//   }
-// }
+@Injectable()
+export class JAuthGuard extends AuthGuard('jwt') {
+  handleRequest(err, user) {
+    if (err || !user) {
+      throw err || new UnauthorizedException();
+    }
+    return user;
+  }
+}

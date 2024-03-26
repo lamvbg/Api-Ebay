@@ -10,6 +10,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { OrderModule } from './order/order.module';
 import { CategoryModule } from './Category/category.module';
 import { SettingModule } from './setting/setting.module';
+import { CartModule } from './cart/cart.module';
 // import { AuthMiddleware } from './auth/authMiddleWare';
 
 @Module({
@@ -21,6 +22,7 @@ import { SettingModule } from './setting/setting.module';
     OrderModule,
     CategoryModule,
     SettingModule,
+    CartModule,
     JwtModule.register({
       secret: 'your-secret-key',
       signOptions: { expiresIn: '24h' },

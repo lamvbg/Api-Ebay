@@ -1,6 +1,6 @@
 // ebay.controller.ts
 
-import { Controller, Get, Query, Param, Post, Patch, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Query, Param, Post, Patch, HttpException, HttpStatus, Put, Body, NotFoundException } from '@nestjs/common';
 import { EbayService } from './product.service';
 import { ProductEntity } from './entities';
 import { PaginationQueryDto } from './dto/PaginationQueryDto.dto';
@@ -35,6 +35,16 @@ export class EbayController {
   @Get()
   async findAll(@Query() paginationQuery: PaginationQueryDto): Promise<PaginatedProductsResultDto> {
     return this.ebayService.findAll(paginationQuery);
+  }
+
+  @Put(':id')
+  async updateProduct(@Param('id') id: string, @Body() productData: Partial<ProductEntity>): Promise<ProductEntity> {
+    try {
+      const updatedProduct = await this.ebayService.updateProduct(id, productData);
+      return updatedProduct;
+    } catch (error) {
+      throw new NotFoundException(error.message);
+    }
   }
 
 }

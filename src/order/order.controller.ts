@@ -3,6 +3,7 @@
 import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { OrderEntity } from './entities';
+import { OrderDto } from './dto/order.dto';
 
 @Controller('order')
 export class OrderController {
@@ -19,8 +20,8 @@ export class OrderController {
   }
 
   @Post()
-  async create(@Body() data: Partial<OrderEntity>): Promise<OrderEntity> {
-    return this.orderService.create(data);
+  async create(@Param('id') id: string, @Body() orderDto: OrderDto): Promise<OrderEntity> {
+    return this.orderService.create(orderDto);
   }
 
   @Put(':id')

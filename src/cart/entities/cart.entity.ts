@@ -1,0 +1,27 @@
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { ProductEntity } from '../../product/entities';
+import { UserEntity } from 'src/user/entities';
+
+@Entity({ name: 'Cart' })
+export class CartEntity {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @ManyToOne(() => UserEntity, user => user.cartItems)
+  user: UserEntity;
+
+  @ManyToOne(() => ProductEntity, { eager: true })
+  product: ProductEntity;
+
+  @Column()
+  quantity: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  totalPrice: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  shippingFee: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  warrantyFee: number;
+}

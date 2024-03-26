@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import axios from 'axios';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -120,7 +120,6 @@ export class EbayService {
     }
   }
 
-
   async getItemAndUpdatePrice(itemId: string): Promise<any> {
     try {
       const accessToken = await this.ebayAuthService.getAccessToken();
@@ -168,13 +167,13 @@ export class EbayService {
       const translatedConditionDescription = ebayData.conditionDescription ? await this.translationService.translateText(ebayData.conditionDescription, 'vi') : ebayData.conditionDescription;
       const localizedAspectsUpdate = [];
       for (const aspect of ebayData.localizedAspects) {
-          const translationName = aspect.name ? await this.translationService.translateText(aspect.name, 'vi') : aspect.name;
-          const translationValue = aspect.value ? await this.translationService.translateText(aspect.value, 'vi') : aspect.value;
-          localizedAspectsUpdate.push({
-              type: aspect.type,
-              name: translationName,
-              value: translationValue
-          });
+        const translationName = aspect.name ? await this.translationService.translateText(aspect.name, 'vi') : aspect.name;
+        const translationValue = aspect.value ? await this.translationService.translateText(aspect.value, 'vi') : aspect.value;
+        localizedAspectsUpdate.push({
+          type: aspect.type,
+          name: translationName,
+          value: translationValue
+        });
       }
       return {
         ...ebayData,
@@ -271,8 +270,6 @@ export class EbayService {
       console.log(ratioPrice);
     }));
   }
-
-
 
   async updatePricesAccordingToRatioDiscount(ratioDiscount: number): Promise<void> {
     try {
@@ -372,5 +369,36 @@ export class EbayService {
       limit,
       totalCount,
     };
+  }
+
+  async updateProduct(id: string, productData: Partial<ProductEntity>): Promise<ProductEntity> {
+    try {
+      const existingProduct = await this.productRepository.findOne({ where: { id } });
+      if (!existingProduct) {
+        throw new NotFoundException(`Product with ID ${id} not found.`);
+      }
+
+      if (productData.marketingPrice && productData.marketingPrice.discountPercentage) {
+        const originalPriceValue = parseFloat(existingProduct.marketingPrice.originalPrice.value);
+        const discountPercentage = parseFloat(productData.marketingPrice.discountPercentage);
+        const newDiscountAmountValue = (originalPriceValue * discountPercentage) / 100;
+
+        productData.marketingPrice.discountAmount = {
+          value: newDiscountAmountValue.toFixed(2),
+          currency: "VND",
+        };
+        const newPriceValue = originalPriceValue - newDiscountAmountValue;
+        productData.price = [{
+          lastUpdated: new Date(),
+          value: newPriceValue,
+        }];
+      }
+
+      Object.assign(existingProduct, productData);
+      return await this.productRepository.save(existingProduct);
+    } catch (error) {
+      throw error;
+    }
+
   }
 }

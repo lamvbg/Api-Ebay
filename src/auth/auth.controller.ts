@@ -1,6 +1,7 @@
 import { Controller, Get, Redirect, Req, Res, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { JWTAuthGuard } from './utils/Guards';
+import { JAuthGuard } from './authMiddleWare';
 
 @Controller('auth')
 export class AuthController {
@@ -15,6 +16,12 @@ export class AuthController {
   @UseGuards(JWTAuthGuard)
   handleGoogleRedirect() {
     return { msg: 'Google Authentication' };
+  }
+
+  @Get('profile')
+  @UseGuards(JAuthGuard)
+  getProfile(@Req() request) {
+    return request.user; 
   }
 
   // Facebook authentication routes
