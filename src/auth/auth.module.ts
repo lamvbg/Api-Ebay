@@ -7,6 +7,7 @@ import { GoogleStrategy } from './utils/google.strategy';
 import { FacebookStrategy } from './utils/facebook.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './utils/jwt.strategy';
+import { JAuthGuard } from './utils/authMiddleWare';
 
 @Module({
   imports: [TypeOrmModule.forFeature([UserEntity]),
@@ -19,7 +20,8 @@ import { JwtStrategy } from './utils/jwt.strategy';
     GoogleStrategy,
     FacebookStrategy,
     AuthService,
-    JwtStrategy
+    JwtStrategy,
+    JAuthGuard
   ],
 })
 export class AuthModule {}

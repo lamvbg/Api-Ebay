@@ -1,27 +1,47 @@
 import { Controller, Get, NotFoundException, Redirect, Req, Res, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { JWTAuthGuard } from './utils/Guards';
+import { FacebookAuthGuard, GoogleAuthGuard } from './utils/Guards';
 import { JAuthGuard } from './utils/authMiddleWare';
 import { AuthService } from './auth.service';
+import { RolesGuard } from './utils/role.middleware';
+import { GoogleStrategy } from './utils/google.strategy';
+interface AuthenticatedUser {
+  accessToken: string;
+  redirectURL: string;
+}
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly googleStrategy: GoogleStrategy) {}
   // Google authentication routes
   @Get('google/login')
-  @UseGuards(JWTAuthGuard)
+  @UseGuards(GoogleAuthGuard)
   handleGoogleLogin() {
     return { msg: 'Google Authentication' };
   }
 
   @Get('google/redirect')
-  @UseGuards(JWTAuthGuard)
-  handleGoogleRedirect() {
-    return { msg: 'Google Authentication' };
+  @UseGuards(GoogleAuthGuard)
+  async handleGoogleRedirect(@Req() req: Request, @Res() res: Response) {
+    try {
+      const user = req.user as AuthenticatedUser;
+      const { accessToken, redirectURL } = user;
+  
+      if (!redirectURL) {
+        throw new Error("Redirect URL is undefined");
+      }
+  
+      res.redirect(redirectURL);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
   }
-
+  
   @Get('profile')
-  @UseGuards(JAuthGuard)
+  @UseGuards(JAuthGuard, RolesGuard)
   async findUserProfile(@Req() request) {
     const userId = request.user.sub;
     const user = await this.authService.findUserById(userId);
@@ -31,26 +51,28 @@ export class AuthController {
     return user;
   }
 
-  // Facebook authentication routes
   @Get('facebook/login')
-  @UseGuards(JWTAuthGuard)
+  @UseGuards(FacebookAuthGuard)
   handleFacebookLogin() {
     return { msg: 'Facebook Authentication' };
   }
 
   @Get('facebook/redirect')
-  @UseGuards(JWTAuthGuard)
-  handleFacebookRedirect() {
-    return { msg: 'Google Authentication' };; 
-  }
-
-  @Get('status')
-  user(@Req() request: Request) {
-    console.log(request.user);
-    if (request.user) {
-      return { msg: 'Authenticated' };
-    } else {
-      return { msg: 'Not Authenticated' };
+  @UseGuards(FacebookAuthGuard)
+  async handleFacebookRedirect(@Req() req: Request, @Res() res: Response) {
+    try {
+      const user = req.user as AuthenticatedUser;
+      const { accessToken, redirectURL } = user;
+  
+      if (!redirectURL) {
+        throw new Error("Redirect URL is undefined");
+      }
+  
+      res.redirect(redirectURL);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Internal server error' });
     }
   }
+
 }

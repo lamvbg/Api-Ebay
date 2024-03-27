@@ -1,27 +1,17 @@
-// import { Injectable, NestMiddleware } from '@nestjs/common';
-// import { Request, Response, NextFunction } from 'express';
-// import { AuthService } from '../auth.service';
+import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
+import { UserRole } from '../../user/entities'; 
+@Injectable()
+export class RolesGuard implements CanActivate {
+  constructor() {}
 
-// @Injectable()
-// export class RoleMiddleware implements NestMiddleware {
-//     constructor(private authService: AuthService) {}
+  canActivate(context: ExecutionContext): boolean {
+    const request = context.switchToHttp().getRequest();
+    const user = request.user;
 
-//     async use(req: Request, res: Response, next: NextFunction) {
-//         try {
-//             if (req.user) {
-//                 const userId = req.user.sub;
-//                 const user = await this.authService.findUserById(userId);
-//                 if (user && user.role === 'admin') {
-//                     next();
-//                 } else {
-//                     res.status(403).send('Forbidden');
-//                 }
-//             } else {
-//                 res.status(401).send('Unauthorized');
-//             }
-//         } catch (error) {
-//             console.error(error);
-//             res.status(500).send('Internal Server Error');
-//         }
-//     }
-// }
+    if (!user || user.role === UserRole.ADMIN) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+}

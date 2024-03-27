@@ -13,13 +13,10 @@ export class JAuthGuard implements CanActivate {
       throw new UnauthorizedException();
     }
     try {
-      const payload = await this.jwtService.verifyAsync(
-        token,
-        {
-          secret: 'asiodasjoddjdoasddasoidjasiodasdjaiodd'
-        }
-      );
-      request['user'] = payload;
+      const payload = await this.jwtService.verifyAsync(token, {
+        secret: 'asiodasjoddjdoasddasoidjasiodasdjaiodd',
+      });
+      request.user = payload;
     } catch {
       throw new UnauthorizedException();
     }

@@ -21,21 +21,29 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
   }
 
   async validate(accessToken: string, refreshToken: string, profile: Profile, done: (err: any, user: any, info?: any) => void): Promise<any> {
-
+    try {
     console.log(accessToken);
     console.log(profile);
     const user = await this.authService.validateUserFromFacebook({
         email: profile.emails[0].value,
         displayName: profile.displayName,
-        birthday: profile.birthday,
       });
       
 
-      const payload = { sub: user.id, email: user.email };
+      const payload = { 
+        sub: user.id, 
+        email: user.email, 
+        displayName: user.displayName,
+        role: user.role
+      };
 
       const token = this.jwtService.sign(payload);
-
-      console.log(token);
-      return { accessToken: token };
+      const redirectURL = `https://ebay-store.onrender.com?token=${token}`;
+      console.log(payload)
+      // console.log(token)
+      return { accessToken: token, redirectURL };
+    } catch (error) {
+      throw error;
+    }
   }
 }
