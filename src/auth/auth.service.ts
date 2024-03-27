@@ -36,11 +36,13 @@ export class AuthService {
   
   async validateUserFromFacebook(details: UserDetails) {
     const email = details.email; 
+    const displayName = details.displayName;
     let user = await this.userRepository.findOne({ where: { email: email } });
 
     if (!user) {
       user = await this.userRepository.create({ 
         email: email, 
+        displayName
       });
       user = await this.userRepository.save(user);
     }
