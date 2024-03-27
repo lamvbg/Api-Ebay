@@ -266,8 +266,8 @@ export class EbayService {
         console.error(`Incomplete or missing marketingPrice data for product with ID ${product.id}`);
       }
       await this.productRepository.save(product);
-      console.log(usedOldRatioPrice);
-      console.log(ratioPrice);
+      // console.log(usedOldRatioPrice);
+      // console.log(ratioPrice);
     }));
   }
 

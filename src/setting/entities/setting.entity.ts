@@ -5,11 +5,14 @@ export class Setting {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ default: 'default' })
-    banner: string;
+    @Column({ type: 'jsonb', nullable: true, default: {} })
+    bannerTop: { bannerTopImg: string }[];
 
-    @Column({ nullable: true })
-    slide: string;
+    @Column({ type: 'jsonb', nullable: true, default: {} })
+    slide: { slideImg: string }[];
+    
+    @Column({ type: 'jsonb', nullable: true, default: {} })
+    bannerBot: { bannerBotImg: string }[];
 
     @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
     ratioPrice: number;

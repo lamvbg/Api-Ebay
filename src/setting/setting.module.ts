@@ -10,6 +10,7 @@ import { GoogleTranslateService } from 'src/product/translation.service';
 import { CategoryService } from 'src/Category/category.service';
 import { Category } from 'src/Category/entities';
 import { JwtModule } from '@nestjs/jwt';
+import { CloudinaryService } from './utils/file.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Setting, ProductEntity, Category]),JwtModule.register({
@@ -17,6 +18,6 @@ import { JwtModule } from '@nestjs/jwt';
     signOptions: { expiresIn: '24h' },
   })],
   controllers: [SettingController],
-  providers: [SettingService, EbayService, EbayAuthService, GoogleTranslateService, CategoryService],
+  providers: [SettingService, EbayService, EbayAuthService, GoogleTranslateService, CategoryService, CloudinaryService],
 })
 export class SettingModule {}
