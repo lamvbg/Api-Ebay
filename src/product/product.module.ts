@@ -10,9 +10,13 @@ import { CategoryService } from '../Category/category.service';
 import { Category } from 'src/Category/entities';
 import { SettingService } from 'src/setting/setting.service';
 import { Setting } from 'src/setting/entities';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ProductEntity, Category, Setting]), ConfigModule.forRoot()],
+  imports: [TypeOrmModule.forFeature([ProductEntity, Category, Setting]), ConfigModule.forRoot(),JwtModule.register({
+    secret: 'asiodasjoddjdoasddasoidjasiodasdjaiodd',
+    signOptions: { expiresIn: '24h' },
+  })],
   controllers: [EbayController],
   providers: [EbayService, EbayAuthService, GoogleTranslateService, CategoryService, SettingService],
 })

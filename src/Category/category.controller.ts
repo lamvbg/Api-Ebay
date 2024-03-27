@@ -1,8 +1,10 @@
 // src/category/category.controller.ts
 
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { Category } from './entities';
 import { CategoryService } from './category.service';
+import { RolesGuard } from 'src/auth/utils/role.middleware';
+import { JAuthGuard } from 'src/auth/utils/authMiddleWare';
 
 @Controller('categories')
 export class CategoryController {
@@ -19,16 +21,19 @@ export class CategoryController {
   }
 
   @Post()
+  @UseGuards(JAuthGuard, RolesGuard)
   async create(@Body() categoryData: Partial<Category>): Promise<Category> {
     return this.categoryService.create(categoryData);
   }
 
   @Put(':id')
+  @UseGuards(JAuthGuard, RolesGuard)
   async update(@Param('id') id: number, @Body() categoryData: Partial<Category>): Promise<Category> {
     return this.categoryService.update(id, categoryData);
   }
 
   @Delete(':id')
+  @UseGuards(JAuthGuard, RolesGuard)
   async remove(@Param('id') id: number): Promise<void> {
     return this.categoryService.remove(id);
   }

@@ -1,10 +1,12 @@
 // ebay.controller.ts
 
-import { Controller, Get, Query, Param, Post, Patch, HttpException, HttpStatus, Put, Body, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Query, Param, Post, Patch, HttpException, HttpStatus, Put, Body, NotFoundException, UseGuards } from '@nestjs/common';
 import { EbayService } from './product.service';
 import { ProductEntity } from './entities';
 import { PaginationQueryDto } from './dto/PaginationQueryDto.dto';
 import { PaginatedProductsResultDto } from './dto/PaginatedProductsResultDto.dto';
+import { JAuthGuard } from 'src/auth/utils/authMiddleWare';
+import { RolesGuard } from 'src/auth/utils/role.middleware';
 
 @Controller('ebay')
 export class EbayController {
@@ -38,6 +40,7 @@ export class EbayController {
   }
 
   @Put(':id')
+  @UseGuards(JAuthGuard, RolesGuard)
   async updateProduct(@Param('id') id: string, @Body() productData: Partial<ProductEntity>): Promise<ProductEntity> {
     try {
       const updatedProduct = await this.ebayService.updateProduct(id, productData);
