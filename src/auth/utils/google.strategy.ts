@@ -15,8 +15,8 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       clientID: '663430011506-av2org7g915448j33o0ruo58vubmda8v.apps.googleusercontent.com',
       clientSecret: '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',
       callbackURL: isProduction
-        ? 'https://api-ebay.onrender.com/api/auth/google/redirect'
-        : 'http://localhost:2001/api/auth/google/redirect',
+        ? 'https://api-ebay.onrender.com/api/auth/google/login'
+        : 'http://localhost:2001/api/auth/google/login',
       scope: ['profile', 'email'],
     });
   }
@@ -33,10 +33,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       };
 
       const token = this.jwtService.sign(payload);
-      const redirectURL = `http://localhost:5173?token=${token}`;
-      console.log(payload)
-      // console.log(token)
-      return { accessToken: token, redirectURL };
+      return token;
     } catch (error) {
       throw error;
     }

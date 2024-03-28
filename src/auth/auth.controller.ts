@@ -18,27 +18,24 @@ export class AuthController {
   // Google authentication routes
   @Get('google/login')
   @UseGuards(GoogleAuthGuard)
-  handleGoogleLogin() {
-    return { msg: 'Google Authentication' };
-  }
-
-  @Get('google/redirect')
-  @UseGuards(GoogleAuthGuard)
-  async handleGoogleRedirect(@Req() req: Request, @Res() res: Response) {
+  async handleGoogleLogin(@Req() req: Request, @Res() res: Response) {
     try {
       const user = req.user as AuthenticatedUser;
-      const { accessToken, redirectURL } = user;
-  
-      if (!redirectURL) {
-        throw new Error("Redirect URL is undefined");
+
+      if (!user) {
+        throw new Error('User not found');
       }
-  
-      res.redirect(redirectURL);
+
+
+      const accessToken = user;
+
+      res.json({ accessToken });
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: 'Internal server error' });
     }
   }
+
   
   @Get('profile')
   @UseGuards(JAuthGuard, RolesGuard)
