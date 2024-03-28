@@ -1,10 +1,15 @@
-import { Controller, Get, NotFoundException, Redirect, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, NotFoundException, Param, ParseIntPipe, Put, Redirect, Req, Res, UnauthorizedException, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { FacebookAuthGuard, GoogleAuthGuard } from './utils/Guards';
 import { JAuthGuard } from './utils/authMiddleWare';
 import { AuthService } from './auth.service';
 import { RolesGuard } from './utils/role.middleware';
 import { GoogleStrategy } from './utils/google.strategy';
+import { UpdateUserDto } from './dto/user.dto';
+import { UserEntity } from 'src/user/entities';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Multer } from 'multer';
+
 interface AuthenticatedUser {
   accessToken: string;
   redirectURL: string;
@@ -40,8 +45,27 @@ export class AuthController {
     }
   }
   
+  @Put(':id')
+  @UseGuards(JAuthGuard)
+  @UseInterceptors(FileInterceptor('avatar'))
+  async updateUser(
+    @Param('id') id: number,
+    @Body() updateUserDto: UpdateUserDto,
+    @Req() request,
+    @UploadedFile() avatar?: Multer.File,
+  ): Promise<UserEntity> {
+    const authenticatedUserId = Number(request.user.sub);
+    const authenticatedUserRole = request.user.role;
+  
+    if (authenticatedUserId != id && authenticatedUserRole !== 'admin') {
+      throw new UnauthorizedException('You are not authorized to update this resource.');
+    }
+    return this.authService.updateUser(id, updateUserDto, avatar);
+  }
+  
+
   @Get('profile')
-  @UseGuards(JAuthGuard, RolesGuard)
+  @UseGuards(JAuthGuard)
   async findUserProfile(@Req() request) {
     const userId = request.user.sub;
     const user = await this.authService.findUserById(userId);

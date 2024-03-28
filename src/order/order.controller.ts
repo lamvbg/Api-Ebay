@@ -28,7 +28,6 @@ export class OrderController {
   async findByUserId(@Param('userId') userId: number, @Req() request) {
     try {
       const orders = await this.orderService.findByUserId(userId);
-      console.log(userId);
 
       const authenticatedUserId = Number(request.user.sub);
       console.log(authenticatedUserId);

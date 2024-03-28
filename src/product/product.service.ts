@@ -27,7 +27,7 @@ export class EbayService {
   async searchItems(categoryEnglishName: string): Promise<any> {
     try {
       const accessToken = await this.ebayAuthService.getAccessToken();
-      const response = await axios.get(`${this.ebayApiUrl}?q=${categoryEnglishName}&limit=50`, {
+      const response = await axios.get(`${this.ebayApiUrl}?q=${categoryEnglishName}&limit=200`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

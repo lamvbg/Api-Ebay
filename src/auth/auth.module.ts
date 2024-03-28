@@ -8,6 +8,7 @@ import { FacebookStrategy } from './utils/facebook.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './utils/jwt.strategy';
 import { JAuthGuard } from './utils/authMiddleWare';
+import { CloudinaryService } from 'src/setting/utils/file.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([UserEntity]),
@@ -21,7 +22,8 @@ import { JAuthGuard } from './utils/authMiddleWare';
     FacebookStrategy,
     AuthService,
     JwtStrategy,
-    JAuthGuard
+    JAuthGuard,
+    CloudinaryService
   ],
 })
 export class AuthModule {}

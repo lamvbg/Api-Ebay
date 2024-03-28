@@ -21,6 +21,18 @@ export class UserEntity {
   @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
   role: UserRole;
 
+  @Column({ nullable: true })
+  avatar: string;
+
+  @Column({ nullable: true })
+  birthDate: Date;
+
+  @Column({ nullable: true })
+  address: string;
+
+  @Column({ nullable: true })
+  phoneNumber: string;
+
   @OneToMany(() => OrderEntity, order => order.user)
   orders: OrderEntity[];
 

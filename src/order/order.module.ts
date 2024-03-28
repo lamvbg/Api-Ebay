@@ -10,6 +10,7 @@ import { UserEntity } from 'src/user/entities';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from 'src/auth/utils/jwt.strategy';
 import { AuthService } from 'src/auth/auth.service';
+import { CloudinaryService } from 'src/setting/utils/file.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([OrderEntity, ProductEntity, UserEntity]),JwtModule.register({
@@ -17,6 +18,6 @@ import { AuthService } from 'src/auth/auth.service';
     signOptions: { expiresIn: '24h' },
   })],
   controllers: [OrderController],
-  providers: [OrderService, JwtStrategy, AuthService],
+  providers: [OrderService, JwtStrategy, AuthService, CloudinaryService],
 })
 export class OrderModule {}

@@ -27,6 +27,9 @@ export class OrderEntity {
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   warrantyFee: number;
 
+  @Column({ nullable: true })
+  address: string;
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 }
