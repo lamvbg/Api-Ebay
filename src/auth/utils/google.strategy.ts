@@ -33,10 +33,10 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       };
 
       const token = this.jwtService.sign(payload);
-      const isProduction = process.env.NODE_ENV === 'production';
-      const redirectURL = isProduction
-      ? `${process.env.PRODUCTION_REDIRECT_URL}?token=${token}`
-      : `${process.env.LOCAL_REDIRECT_URL}?token=${token}`;
+      const isLocal = process.env.NODE_ENV !== 'production';
+      const redirectURL = isLocal
+        ? `${process.env.LOCAL_REDIRECT_URL}?token=${token}`
+        : `${process.env.PRODUCTION_REDIRECT_URL}?token=${token}`;
       console.log(payload)
       // console.log(token)
       return { accessToken: token, redirectURL };
