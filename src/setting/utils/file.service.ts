@@ -28,6 +28,15 @@ export class CloudinaryService {
     });
   }
 
+  async deleteImage(publicId: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      cloudinary.uploader.destroy(publicId, (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      });
+    });
+  }
+
   async getImageUrl(publicId: string) {
     try {
       const result = await cloudinary.image(publicId, { secure: true });
@@ -36,5 +45,12 @@ export class CloudinaryService {
       console.error('Error getting image URL from Cloudinary:', error);
       throw error;
     }
+  }
+
+  extractPublicIdFromUrl(imageUrl: string): string {
+    const parts = imageUrl.split('/');
+    const lastPart = parts[parts.length - 1];
+    const publicId = lastPart.split('.').slice(0, -1).join('.');
+    return publicId;
   }
 }

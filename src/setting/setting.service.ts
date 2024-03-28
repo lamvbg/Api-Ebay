@@ -28,35 +28,42 @@ export class SettingService {
     const bannerTopUrls = await Promise.all(bannerTopImages.map(async bannerTopImage => this.uploadAndReturnUrl(bannerTopImage)));
     const bannerBotUrls = await Promise.all(bannerBotImages.map(async bannerBotImage => this.uploadAndReturnUrl(bannerBotImage)));
     const slideUrls = await Promise.all(slideImages.map(async slideImage => this.uploadAndReturnUrl(slideImage)));
-  
+
     const setting: Partial<Setting> = {
       ...settingData,
       bannerTop: bannerTopUrls.map(url => ({ bannerTopImg: url })),
       bannerBot: bannerBotUrls.map(url => ({ bannerBotImg: url })),
       slide: slideUrls.map(url => ({ slideImg: url })),
     };
-  
+
     return this.settingRepository.save(setting);
   }
-  
 
-  async update(updatedSetting: Partial<Setting>, oldRatioPrice: number, bannerTopImages: Multer.File[], bannerBotImages: Multer.File[], slideImages: Multer.File[]): Promise<Setting> {
+  async update(
+    updatedSetting: Partial<Setting>,
+    oldRatioPrice: number,
+    bannerTopImages: Multer.File[],
+    bannerBotImages: Multer.File[],
+    slideImages: Multer.File[]
+  ): Promise<Setting> {
     const existingSetting = await this.settingRepository.findOne({ where: {} });
+    await this.deleteOldImages(existingSetting);
     const mergedSetting = this.settingRepository.merge(existingSetting, updatedSetting);
     const updatedSettingEntity = await this.settingRepository.save(mergedSetting);
-  
+
     if (Number(updatedSettingEntity.ratioPrice) !== Number(oldRatioPrice)) {
       await this.ebayService.updatePricesAccordingToRatio(updatedSettingEntity.ratioPrice, oldRatioPrice);
     }
-  
+
     const bannerTopUrls = await Promise.all(bannerTopImages.map(async bannerTopImage => this.uploadAndReturnUrl(bannerTopImage)));
     const bannerBotUrls = await Promise.all(bannerBotImages.map(async bannerBotImage => this.uploadAndReturnUrl(bannerBotImage)));
     const slideUrls = await Promise.all(slideImages.map(async slideImage => this.uploadAndReturnUrl(slideImage)));
-  
+
     updatedSettingEntity.bannerTop = bannerTopUrls.map(url => ({ bannerTopImg: url }));
     updatedSettingEntity.bannerBot = bannerBotUrls.map(url => ({ bannerBotImg: url }));
     updatedSettingEntity.slide = slideUrls.map(url => ({ slideImg: url }));
-  
+
+
     const updatedSettingResult = await this.settingRepository.save(updatedSettingEntity);
     return updatedSettingResult;
   }
@@ -70,6 +77,18 @@ export class SettingService {
   async delete(): Promise<void> {
     await this.settingRepository.clear();
   }
+
+  async deleteOldImages(setting: Setting): Promise<void> {
+    const oldImages: string[] = [];
+    setting.bannerTop.forEach(banner => oldImages.push(banner.bannerTopImg));
+    setting.bannerBot.forEach(banner => oldImages.push(banner.bannerBotImg));
+    setting.slide.forEach(slide => oldImages.push(slide.slideImg));
+    await Promise.all(oldImages.map(async imageUrl => {
+      const publicId = this.cloudinaryService.extractPublicIdFromUrl(imageUrl);
+      await this.cloudinaryService.deleteImage(publicId);
+    }));
+  }
+
 
   private async uploadAndReturnUrl(file: Multer.File): Promise<string> {
     try {
