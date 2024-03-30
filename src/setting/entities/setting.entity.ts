@@ -17,9 +17,12 @@ export class Setting {
     @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
     ratioPrice: number;
 
-    @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
-    ratioDiscount: number;
+    @Column({ nullable: true })
+    shippingFee: number;
 
-    @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+    @Column({ nullable: true })
     weightBasedPrice: number;
+    
+    @Column({ type: 'jsonb', nullable: true, default: {} })
+    warrantyFees: { [key: string]: number };
 }

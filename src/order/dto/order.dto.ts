@@ -3,7 +3,7 @@ export class OrderDto {
     productId: string;
     quantity: number;
     shippingFee: number;
-    warrantyFee: number;
+    warrantyType: string; 
     totalPrice: number;
     createdAt: Date;
 }

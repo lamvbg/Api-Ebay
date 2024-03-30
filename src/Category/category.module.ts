@@ -5,9 +5,10 @@ import { CategoryController } from './category.controller';
 import { CategoryService } from './category.service';
 import { GoogleTranslateService } from '../product/translation.service'; // Điều chỉnh đường dẫn import
 import { JwtModule } from '@nestjs/jwt';
+import { ProductEntity } from 'src/product/entities';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Category]),JwtModule.register({
+  imports: [TypeOrmModule.forFeature([Category, ProductEntity]),JwtModule.register({
     secret: 'asiodasjoddjdoasddasoidjasiodasdjaiodd',
     signOptions: { expiresIn: '24h' },
   })],

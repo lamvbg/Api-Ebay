@@ -11,7 +11,6 @@ import { Multer } from 'multer';
 @Injectable()
 export class SettingService {
   private oldRatioPrice: number | null = null;
-  private oldRatioDiscount: number | null = null;
   constructor(
     @InjectRepository(Setting)
     private readonly settingRepository: Repository<Setting>,
@@ -42,6 +41,7 @@ export class SettingService {
   async update(
     updatedSetting: Partial<Setting>,
     oldRatioPrice: number,
+    oldWarrantyFees: { [key: string]: number },
     bannerTopImages: Multer.File[],
     bannerBotImages: Multer.File[],
     slideImages: Multer.File[]
@@ -50,24 +50,27 @@ export class SettingService {
     await this.deleteOldImages(existingSetting);
     const mergedSetting = this.settingRepository.merge(existingSetting, updatedSetting);
     const updatedSettingEntity = await this.settingRepository.save(mergedSetting);
-
+  
+    if (JSON.stringify(updatedSettingEntity.warrantyFees) != JSON.stringify(oldWarrantyFees)) {
+      await this.ebayService.updateWarrantyFees(updatedSettingEntity.warrantyFees, oldWarrantyFees);
+    }
+  
     if (Number(updatedSettingEntity.ratioPrice) !== Number(oldRatioPrice)) {
       await this.ebayService.updatePricesAccordingToRatio(updatedSettingEntity.ratioPrice, oldRatioPrice);
     }
-
+  
     const bannerTopUrls = await Promise.all(bannerTopImages.map(async bannerTopImage => this.uploadAndReturnUrl(bannerTopImage)));
     const bannerBotUrls = await Promise.all(bannerBotImages.map(async bannerBotImage => this.uploadAndReturnUrl(bannerBotImage)));
     const slideUrls = await Promise.all(slideImages.map(async slideImage => this.uploadAndReturnUrl(slideImage)));
-
+  
     updatedSettingEntity.bannerTop = bannerTopUrls.map(url => ({ bannerTopImg: url }));
     updatedSettingEntity.bannerBot = bannerBotUrls.map(url => ({ bannerBotImg: url }));
     updatedSettingEntity.slide = slideUrls.map(url => ({ slideImg: url }));
-
-
+  
     const updatedSettingResult = await this.settingRepository.save(updatedSettingEntity);
     return updatedSettingResult;
   }
-
+  
   async getRatioPrice(): Promise<number | null> {
     const setting = await this.settingRepository.findOne({ where: {} });
     return setting ? setting.ratioPrice : null;
@@ -98,5 +101,14 @@ export class SettingService {
       console.error('Error uploading image to Cloudinary:', error);
       throw error;
     }
+  }
+
+  async getWarrantyFee(warrantyType: string, id: number): Promise<number | null> {
+    const setting = await this.settingRepository.findOne({where: {id}});
+    if (!setting) {
+      return null;
+    }
+    const warrantyFee = setting.warrantyFees[warrantyType];
+    return warrantyFee !== undefined ? warrantyFee : null;
   }
 }

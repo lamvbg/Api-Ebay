@@ -26,12 +26,6 @@ export class CategoryController {
     return this.categoryService.create(categoryData);
   }
 
-  @Put(':id')
-  @UseGuards(JAuthGuard, RolesGuard)
-  async update(@Param('id') id: number, @Body() categoryData: Partial<Category>): Promise<Category> {
-    return this.categoryService.update(id, categoryData);
-  }
-
   @Delete(':id')
   @UseGuards(JAuthGuard, RolesGuard)
   async remove(@Param('id') id: number): Promise<void> {

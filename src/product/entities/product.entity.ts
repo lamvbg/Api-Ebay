@@ -53,4 +53,7 @@ export class ProductEntity {
 
   @OneToMany(() => OrderEntity, order => order.product)
   orders: OrderEntity[];
+
+  @Column({ type: 'jsonb', nullable: true, default: {} })
+  warrantyFees: { [key: string]: number };
 }

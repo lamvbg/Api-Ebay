@@ -10,6 +10,7 @@ import { PaginatedProductsResultDto } from './dto/PaginatedProductsResultDto.dto
 import { GoogleTranslateService } from './translation.service';
 import { CategoryService } from 'src/Category/category.service';
 import { SettingService } from 'src/setting/setting.service';
+import { Setting } from 'src/setting/entities';
 
 @Injectable()
 export class EbayService {
@@ -21,7 +22,9 @@ export class EbayService {
     private readonly ebayAuthService: EbayAuthService,
     private readonly translationService: GoogleTranslateService,
     private categoryService: CategoryService,
-    private settingService: SettingService
+    private settingService: SettingService,
+    @InjectRepository(Setting)
+    private readonly settingRepository: Repository<Setting>
   ) { }
 
   async searchItems(categoryEnglishName: string): Promise<any> {
@@ -54,11 +57,27 @@ export class EbayService {
             throw new Error(`Category with English name ${categoryEnglishName} not found`);
           }
           newProduct.category = category;
+          newProduct.warrantyFees = {};
 
           const oldRatioPrice = await this.settingService.getRatioPrice()
           const newPrice = newPriceValue * oldRatioPrice + 1300;
           const newOriginal = newOriginalPrice * oldRatioPrice;
           const newDiscount = newDiscountAmount * oldRatioPrice;
+
+          const setting = await this.settingRepository.findOne({ where: {} })
+          const oldWarrantyFees = setting.warrantyFees;
+          console.log(oldWarrantyFees)
+
+          const categoryNamesToInclude = ["Laptop", "Phone", "Audio equipments", "Watch"];
+          if (categoryNamesToInclude.includes(categoryEnglishName)) {
+            for (const key in oldWarrantyFees) {
+              if (oldWarrantyFees.hasOwnProperty(key)) {
+                const fee = parseFloat(oldWarrantyFees[key].toString());
+                const updatedFee = ((fee * newPrice) / 100).toFixed(2);
+                newProduct.warrantyFees[key] = parseFloat(updatedFee);
+              }
+            }
+          }
 
           const newPriceEntry = {
             lastUpdated: new Date(),
@@ -271,39 +290,26 @@ export class EbayService {
     }));
   }
 
-  async updatePricesAccordingToRatioDiscount(ratioDiscount: number): Promise<void> {
-    try {
-      const products = await this.productRepository.find();
+  async updateWarrantyFees(warrantyFee: { [key: string]: number }, oldWarrantyFees: { [key: string]: number } | null): Promise<void> {
+    const products = await this.productRepository.find();
+    await Promise.all(products.map(async product => {
+      const initialPrice = product.price[0].value;
+      const useOldWarrantyFees = oldWarrantyFees !== null ? oldWarrantyFees : warrantyFee;
 
-      for (const product of products) {
-        if (product.marketingPrice) {
-          if (product.marketingPrice.originalPrice && product.marketingPrice.discountAmount) {
-            const originalPrice = parseFloat(product.marketingPrice.originalPrice.value);
-            const discountAmount = parseFloat(product.marketingPrice.discountAmount.value);
-
-            const newOriginalPrice = originalPrice * ratioDiscount;
-            const newDiscountAmount = discountAmount * ratioDiscount;
-
-            product.marketingPrice.originalPrice.value = newOriginalPrice.toFixed(2).toString();
-            product.marketingPrice.discountAmount.value = newDiscountAmount.toFixed(2).toString();
-
-            await this.productRepository.save(product);
-          } else {
-
-            console.error(`Incomplete marketingPrice data for product with ID ${product.id}`);
+      const categoryEnglishName = product.category.englishName;
+      const categoryNamesToInclude = ["Laptop", "Phone", "Audio equipments", "Watch"];
+      if (categoryNamesToInclude.includes(categoryEnglishName)) {
+        for (const key in useOldWarrantyFees) {
+          if (useOldWarrantyFees.hasOwnProperty(key)) {
+            const fee = parseFloat(useOldWarrantyFees[key].toString());
+            const newFee = parseFloat(warrantyFee[key].toString());
+            const updatedFee = (((newFee * initialPrice) / fee) / 100).toFixed(2);
+            product.warrantyFees[key] = parseFloat(updatedFee);
           }
-        } else {
-
-          console.error(`Missing marketingPrice data for product with ID ${product.id}`);
         }
+        await this.productRepository.save(product);
       }
-
-      // Hiển thị thông báo khi hoàn thành cập nhật giá
-      console.log('Prices updated according to the new discount ratio:', ratioDiscount);
-    } catch (error) {
-      // Ném lỗi nếu có lỗi xảy ra trong quá trình cập nhật
-      throw error;
-    }
+    }))
   }
 
   async findAll(paginationQuery: PaginationQueryDto): Promise<PaginatedProductsResultDto> {

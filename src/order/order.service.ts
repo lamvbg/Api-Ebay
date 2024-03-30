@@ -7,12 +7,14 @@ import { OrderEntity } from './entities';
 import { OrderDto } from './dto/order.dto';
 import { ProductEntity } from 'src/product/entities';
 import { UserEntity } from 'src/user/entities';
+import { SettingService } from 'src/setting/setting.service';
 
 @Injectable()
 export class OrderService {
   constructor(
     @InjectRepository(OrderEntity)
     private readonly orderRepository: Repository<OrderEntity>,
+    private settingService: SettingService,
     @InjectRepository(ProductEntity)
     private readonly productRepository: Repository<ProductEntity>,
     @InjectRepository(UserEntity)
@@ -39,8 +41,8 @@ export class OrderService {
     return orders;
   }
 
-  async create(orderDto: OrderDto): Promise<OrderEntity> {
-    const { productId, quantity, totalPrice, createdAt, userId, shippingFee, warrantyFee } = orderDto;
+  async create(orderDto: OrderDto, id:number): Promise<OrderEntity> {
+    const { productId, quantity, totalPrice, createdAt, userId, shippingFee, warrantyType } = orderDto;
 
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
@@ -52,8 +54,11 @@ export class OrderService {
         throw new NotFoundException(`Product with ID ${productId} not found.`);
     }
 
+    // Call SettingService to get warranty fee based on warrantyType
+    const warrantyFee = await this.settingService.getWarrantyFee(warrantyType, id);
+
     const newOrder = this.orderRepository.create({
-        user, // Assigning user object directly
+        user,
         product,
         quantity: quantity || 1,
         shippingFee,
@@ -64,7 +69,7 @@ export class OrderService {
 
     // Save the newOrder object into the database
     return await this.orderRepository.save(newOrder);
-}
+  }
 
   async update(orderId: number, data: Partial<OrderEntity>): Promise<OrderEntity> {
     const order = await this.orderRepository.findOne({where: { id: orderId}});

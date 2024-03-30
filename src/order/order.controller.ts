@@ -46,7 +46,7 @@ export class OrderController {
 
   @Post()
   @UseGuards(JAuthGuard)
-  async create(@Body() orderDto: OrderDto, @Req() request): Promise<OrderEntity> {
+  async create(@Body() orderDto: OrderDto,id, @Req() request): Promise<OrderEntity> {
     try {
       const authenticatedUserId = request.user.sub;
       console.log(authenticatedUserId);
@@ -55,7 +55,7 @@ export class OrderController {
         throw new UnauthorizedException('You are not authorized to create this order.');
       }
 
-      return this.orderService.create(orderDto);
+      return this.orderService.create(orderDto, id);
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         throw error;

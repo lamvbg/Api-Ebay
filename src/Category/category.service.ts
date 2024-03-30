@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Category } from './entities';
 import { GoogleTranslateService } from 'src/product/translation.service';
+import { ProductEntity } from 'src/product/entities';
 
 @Injectable()
 export class CategoryService {
@@ -12,6 +13,8 @@ export class CategoryService {
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
     private translationService: GoogleTranslateService,
+    @InjectRepository(ProductEntity)
+    private productRepository: Repository<ProductEntity>,
   ) {}
 
   async findAll(): Promise<Category[]> {
@@ -36,12 +39,12 @@ export class CategoryService {
     return await this.categoryRepository.save(category);
   }
 
-  async update(id: number, categoryData: Partial<Category>): Promise<Category> {
-    await this.categoryRepository.update(id, categoryData);
-    return this.findOneById(id);
-  }
-
   async remove(id: number): Promise<void> {
+    const productsInCategory = await this.productRepository.find({ where: { category: { id } } });
+    if (productsInCategory.length > 0) {
+      await this.productRepository.delete({ category: { id } });
+    }
     await this.categoryRepository.delete(id);
   }
+  
 }

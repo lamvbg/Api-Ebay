@@ -44,9 +44,10 @@ export class SettingController {
   ): Promise<Setting> {
     const existingSetting = await this.settingService.findOne();
     const oldRatioPrice = existingSetting ? existingSetting.ratioPrice : null;
+    const oldWarrantyFees = existingSetting ? existingSetting.warrantyFees : null;
     const bannerTopImages = files.bannerTopImage;
     const bannerBotImages = files.bannerBotImage;
     const slideImages = files.slideImage;
-    return this.settingService.update(updatedSetting, oldRatioPrice, bannerTopImages, slideImages, bannerBotImages);
-  }
+    return this.settingService.update(updatedSetting, oldRatioPrice, oldWarrantyFees, bannerTopImages, slideImages, bannerBotImages);
+  }  
 }
