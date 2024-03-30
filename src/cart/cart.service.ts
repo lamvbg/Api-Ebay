@@ -40,7 +40,7 @@ export class CartService {
     return await this.cartRepository.save(newCartItem);
 }
 
-  async getAllCartItemsByUserId(userId: number): Promise<CartEntity[]> {
+  async getAllCartItemsByUserId(userId: string): Promise<CartEntity[]> {
     return await this.cartRepository.find({ where: { user: { id: userId } }, relations: ['product'] });
   }
 

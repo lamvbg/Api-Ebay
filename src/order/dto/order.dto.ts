@@ -1,9 +1,10 @@
 export class OrderDto {
-    userId: number;
+    userId: string;
     productId: string;
     quantity: number;
     shippingFee: number;
     warrantyType: string; 
     totalPrice: number;
+    address: string;
     createdAt: Date;
 }

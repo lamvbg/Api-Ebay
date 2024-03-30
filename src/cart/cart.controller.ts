@@ -16,7 +16,7 @@ async addToCart(@Param('id') id: string, @Body() addToCartDto: AddToCartDto): Pr
 
   @Get('items/:userId')
   @UseGuards(JAuthGuard)
-  async getAllCartItemsByUserId(@Param('userId') userId: number): Promise<CartEntity[]> {
+  async getAllCartItemsByUserId(@Param('userId') userId: string): Promise<CartEntity[]> {
     return await this.cartService.getAllCartItemsByUserId(userId);
   }
 

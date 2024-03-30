@@ -49,12 +49,12 @@ export class AuthController {
   @UseGuards(JAuthGuard)
   @UseInterceptors(FileInterceptor('avatar'))
   async updateUser(
-    @Param('id') id: number,
+    @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
     @Req() request,
     @UploadedFile() avatar?: Multer.File,
   ): Promise<UserEntity> {
-    const authenticatedUserId = Number(request.user.sub);
+    const authenticatedUserId = request.user.sub;
     const authenticatedUserRole = request.user.role;
   
     if (authenticatedUserId != id && authenticatedUserRole !== 'admin') {

@@ -25,11 +25,11 @@ export class OrderController {
 
   @Get('user/:userId')
   @UseGuards(JAuthGuard)
-  async findByUserId(@Param('userId') userId: number, @Req() request) {
+  async findByUserId(@Param('userId') userId: string, @Req() request) {
     try {
       const orders = await this.orderService.findByUserId(userId);
 
-      const authenticatedUserId = Number(request.user.sub);
+      const authenticatedUserId = request.user.sub;
       console.log(authenticatedUserId);
 
       if (authenticatedUserId != userId) {

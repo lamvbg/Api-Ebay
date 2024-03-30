@@ -39,7 +39,7 @@ export class AuthService {
     return user;
   }
 
-  async findUserById(id: number): Promise<UserEntity | undefined> {
+  async findUserById(id: string): Promise<UserEntity | undefined> {
     return await this.userRepository.findOne({ where: { id } });
   }
 
@@ -84,7 +84,7 @@ export class AuthService {
     }
   }
 
-  async updateUser(id: number, updateUserDto: UpdateUserDto, avatar?: Multer.File): Promise<UserEntity> {
+  async updateUser(id: string, updateUserDto: UpdateUserDto, avatar?: Multer.File): Promise<UserEntity> {
     try {
       const user = await this.userRepository.findOne({ where: { id } });
       await this.deleteOldImages(user);

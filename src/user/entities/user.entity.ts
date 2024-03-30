@@ -1,4 +1,5 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { BeforeInsert, Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid'; // Import UUID v4 generator
 import { CartEntity } from 'src/cart/entities';
 import { OrderEntity } from 'src/order/entities/order.entity';
 
@@ -9,8 +10,8 @@ export enum UserRole {
 
 @Entity({ name: 'users' })
 export class UserEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid') // Set id as PrimaryGeneratedColumn with type 'uuid'
+  id: string; // Change id type to string
 
   @Column()
   email: string;
@@ -38,4 +39,11 @@ export class UserEntity {
 
   @OneToMany(() => CartEntity, cart => cart.user)
   cartItems: CartEntity[];
+
+  @BeforeInsert()
+  generateId() {
+    if (!this.id) {
+      this.id = uuidv4();
+    }
+  }
 }

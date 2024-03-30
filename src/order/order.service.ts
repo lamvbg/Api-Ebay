@@ -28,7 +28,7 @@ export class OrderService {
   async findOne(id: number): Promise<OrderEntity> {
     return this.orderRepository.findOne({ where: { id }, relations: ["user", "product"]} );
   }  
-  async findByUserId(userId: number): Promise<OrderEntity[]> {
+  async findByUserId(userId: string): Promise<OrderEntity[]> {
     const orders = await this.orderRepository.find({
       where: { user: { id: userId } },
       relations: ["user", "product"]
@@ -42,7 +42,7 @@ export class OrderService {
   }
 
   async create(orderDto: OrderDto, id:number): Promise<OrderEntity> {
-    const { productId, quantity, totalPrice, createdAt, userId, shippingFee, warrantyType } = orderDto;
+    const { productId, quantity, totalPrice, createdAt, userId, shippingFee, warrantyType, address } = orderDto;
 
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
@@ -53,9 +53,7 @@ export class OrderService {
     if (!product) {
         throw new NotFoundException(`Product with ID ${productId} not found.`);
     }
-
-    // Call SettingService to get warranty fee based on warrantyType
-    const warrantyFee = await this.settingService.getWarrantyFee(warrantyType, id);
+    const warrantyFee = product.warrantyFees[warrantyType];
 
     const newOrder = this.orderRepository.create({
         user,
@@ -64,6 +62,7 @@ export class OrderService {
         shippingFee,
         warrantyFee,
         totalPrice,
+        address,
         createdAt
     });
 
@@ -72,22 +71,26 @@ export class OrderService {
   }
 
   async update(orderId: number, data: Partial<OrderEntity>): Promise<OrderEntity> {
-    const order = await this.orderRepository.findOne({where: { id: orderId}});
+    const order = await this.orderRepository.findOne({ where: { id: orderId } });
     if (!order) {
-      throw new NotFoundException(`Order with ID ${orderId} not found.`)
+        throw new NotFoundException(`Order with ID ${orderId} not found.`);
     }
-    if (data.product) {
-      const productId = data.product.id;
-      const product = await this.productRepository.findOne({ where: { id: productId } });
-      if (!product) {
-        throw new NotFoundException(`Product with ID ${productId} not found.`);
-      }
-      order.product = product;
+
+    if (data.product && data.product.warrantyFees && 'warrantyType' in data) {
+        const productId = data.product.id;
+        const product = await this.productRepository.findOne({ where: { id: productId } });
+        if (!product) {
+            throw new NotFoundException(`Product with ID ${productId} not found.`);
+        }
+        const warrantyFee = product.warrantyFees[data['warrantyType'] as string]; // Ép kiểu 'unknown' về 'string'
+        order.warrantyFee = warrantyFee;
     }
-    Object.assign(order, data)
+
+    Object.assign(order, data);
 
     return this.orderRepository.save(order);
-  }
+}
+
 
   async remove(id: number): Promise<void> {
     await this.orderRepository.delete(id);
