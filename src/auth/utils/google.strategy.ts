@@ -33,7 +33,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       };
 
       const token = this.jwtService.sign(payload);
-      const redirectURL = `https://ebay-store.onrender.com/dashboard/home?token=${token}`;
+      const redirectURL = `https://ebay-store.onrender.com?token=${token}`;
       console.log(payload)
       // console.log(token)
       return { accessToken: token, redirectURL };
