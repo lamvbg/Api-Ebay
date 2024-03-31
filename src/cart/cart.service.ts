@@ -20,25 +20,22 @@ export class CartService {
  
   async addToCart(addToCartDto: AddToCartDto): Promise<CartEntity> {
     const { userId, productId, quantity, totalPrice } = addToCartDto;
+    let cartItem = await this.cartRepository.findOne({ where: { user: { id: userId }, product: { id: productId } } });
 
-    const user = await this.userRepository.findOne({ where: { id: userId } });
-    if (!user) {
-      throw new NotFoundException(`User with ID ${userId} not found.`);
+    if (cartItem) {
+      cartItem.quantity += quantity || 1;
+      cartItem.totalPrice += totalPrice;
+      return await this.cartRepository.save(cartItem);
+    } else {
+      const newCartItem = this.cartRepository.create({
+        user: { id: userId },
+        product: { id: productId },
+        quantity: quantity || 1,
+        totalPrice
+      });
+      return await this.cartRepository.save(newCartItem);
     }
-
-    const product = await this.productRepository.findOne({ where: { id: productId } });
-    if (!product) {
-      throw new NotFoundException(`Product with ID ${productId} not found.`);
-    }
-
-    const newCartItem = this.cartRepository.create({
-      user,
-      product,
-      quantity: quantity || 1,
-      totalPrice
-    });
-    return await this.cartRepository.save(newCartItem);
-}
+  }
 
   async getAllCartItemsByUserId(userId: string): Promise<CartEntity[]> {
     return await this.cartRepository.find({ where: { user: { id: userId } }, relations: ['product'] });
