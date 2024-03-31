@@ -10,12 +10,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, new ExpressAdapter(server));
   
   // Cấu hình CORS
-  app.enableCors({
-    origin: ['http://localhost:5173', 'https://ebayorder.netlify.app', 'https://ebay-store.onrender.com'],
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    allowedHeaders: 'Content-Type, Accept',
-    credentials: true,
-  });
+  app.enableCors();
 
   app.setGlobalPrefix('api');
   app.use(passport.initialize());
