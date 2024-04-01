@@ -39,12 +39,12 @@ export class CategoryService {
     return await this.categoryRepository.save(category);
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: number): Promise<any> {
     const productsInCategory = await this.productRepository.find({ where: { category: { id } } });
     if (productsInCategory.length > 0) {
-      await this.productRepository.delete({ category: { id } });
+        await this.productRepository.delete({ category: { id } });
     }
     await this.categoryRepository.delete(id);
-  }
+}
   
 }
