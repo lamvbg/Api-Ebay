@@ -16,6 +16,12 @@ export class CartEntity {
   @Column()
   quantity: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  @Column({nullable: true})
   totalPrice: number;  
+
+  @Column({ nullable: true })
+  warrantyFee: number;
+
+  @Column({ nullable: true })
+  warrantyType: string; 
 }

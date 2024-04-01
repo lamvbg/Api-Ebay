@@ -18,9 +18,6 @@ export class Setting {
     ratioPrice: number;
 
     @Column({ nullable: true })
-    shippingFee: number;
-
-    @Column({ nullable: true })
     weightBasedPrice: number;
     
     @Column({ type: 'jsonb', nullable: true, default: {} })

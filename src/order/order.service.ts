@@ -54,19 +54,19 @@ export class OrderService {
         throw new NotFoundException(`Product with ID ${productId} not found.`);
     }
     const warrantyFee = product.warrantyFees[warrantyType];
+    const totalWarrantyFee = warrantyFee * (quantity || 1);
 
     const newOrder = this.orderRepository.create({
         user,
         product,
         quantity: quantity || 1,
         shippingFee,
-        warrantyFee,
+        warrantyFee: totalWarrantyFee,
         totalPrice,
         address,
         createdAt
     });
 
-    // Save the newOrder object into the database
     return await this.orderRepository.save(newOrder);
   }
 

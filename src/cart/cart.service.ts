@@ -15,23 +15,33 @@ export class CartService {
     private readonly productRepository: Repository<ProductEntity>,
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
-  ) {}
+  ) { }
 
- 
+
   async addToCart(addToCartDto: AddToCartDto): Promise<CartEntity> {
-    const { userId, productId, quantity, totalPrice } = addToCartDto;
+    const { userId, productId, quantity, totalPrice, warrantyType } = addToCartDto;
     let cartItem = await this.cartRepository.findOne({ where: { user: { id: userId }, product: { id: productId } } });
 
-    if (cartItem) {
+    const product = await this.productRepository.findOne({ where: { id: productId } });
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${productId} not found.`);
+    }
+    const warrantyFee = product.warrantyFees[warrantyType];
+    const totalWarrantyFee = warrantyFee * (quantity || 1);
+
+    if (cartItem && cartItem.warrantyType === warrantyType) {
       cartItem.quantity += quantity || 1;
-      cartItem.totalPrice += totalPrice;
+      cartItem.warrantyFee += totalWarrantyFee;
+      warrantyFee;
       return await this.cartRepository.save(cartItem);
     } else {
       const newCartItem = this.cartRepository.create({
         user: { id: userId },
         product: { id: productId },
         quantity: quantity || 1,
-        totalPrice
+        totalPrice,
+        warrantyFee: totalWarrantyFee,
+        warrantyType
       });
       return await this.cartRepository.save(newCartItem);
     }
@@ -44,24 +54,33 @@ export class CartService {
   async updateCartItem(cartItemId: number, updatedData: Partial<CartEntity>): Promise<CartEntity> {
     const cartItem = await this.cartRepository.findOne({ where: { id: cartItemId } });
     if (!cartItem) {
-      throw new NotFoundException(`Cart item with ID ${cartItemId} not found.`);
+        throw new NotFoundException(`Cart item with ID ${cartItemId} not found.`);
     }
 
-    // Kiểm tra xem có cập nhật thông tin sản phẩm không
+
     if (updatedData.product) {
-      const productId = updatedData.product.id;
+        const productId = updatedData.product.id;
+        const product = await this.productRepository.findOne({ where: { id: productId } });
+        if (!product) {
+            throw new NotFoundException(`Product with ID ${productId} not found.`);
+        }
+        cartItem.product = product;
+    }
+
+    if (updatedData.warrantyType) {
+      const productId = cartItem.product.id;
       const product = await this.productRepository.findOne({ where: { id: productId } });
       if (!product) {
-        throw new NotFoundException(`Product with ID ${productId} not found.`);
+          throw new NotFoundException(`Product with ID ${productId} not found.`);
       }
-      cartItem.product = product;
-    }
-
-    // Cập nhật thông tin khác của cartItem
+      updatedData.warrantyFee = product.warrantyFees[updatedData.warrantyType] * (updatedData.quantity || 1);
+  }
     Object.assign(cartItem, updatedData);
 
     return await this.cartRepository.save(cartItem);
-  }
+}
+
+
 
   async deleteCartItem(cartItemId: number): Promise<void> {
     const cartItem = await this.cartRepository.findOne({ where: { id: cartItemId } });

@@ -68,15 +68,12 @@ export class EbayService {
           const oldWarrantyFees = setting.warrantyFees;
           console.log(oldWarrantyFees)
 
-          const categoryNamesToInclude = ["Laptop", "Phone", "Audio equipments", "Watch"];
-          if (categoryNamesToInclude.includes(categoryEnglishName)) {
             for (const key in oldWarrantyFees) {
               if (oldWarrantyFees.hasOwnProperty(key)) {
                 const fee = parseFloat(oldWarrantyFees[key].toString());
                 const updatedFee = ((fee * newPrice) / 100).toFixed(2);
                 newProduct.warrantyFees[key] = parseFloat(updatedFee);
               }
-            }
           }
 
           const newPriceEntry = {
@@ -296,19 +293,15 @@ export class EbayService {
       const initialPrice = product.price[0].value;
       const useOldWarrantyFees = oldWarrantyFees !== null ? oldWarrantyFees : warrantyFee;
 
-      const categoryEnglishName = product.category.englishName;
-      const categoryNamesToInclude = ["Laptop", "Phone", "Audio equipments", "Watch"];
-      if (categoryNamesToInclude.includes(categoryEnglishName)) {
         for (const key in useOldWarrantyFees) {
           if (useOldWarrantyFees.hasOwnProperty(key)) {
-            const fee = parseFloat(useOldWarrantyFees[key].toString());
+            // const fee = parseFloat(useOldWarrantyFees[key].toString());
             const newFee = parseFloat(warrantyFee[key].toString());
-            const updatedFee = (((newFee * initialPrice) / fee) / 100).toFixed(2);
+            const updatedFee = ((newFee * initialPrice) / 100).toFixed(2);
             product.warrantyFees[key] = parseFloat(updatedFee);
           }
         }
         await this.productRepository.save(product);
-      }
     }))
   }
 
