@@ -31,9 +31,11 @@ export class CategoryController {
   async remove(@Param('id') id: number, @Res() res: Response): Promise<void> {
     try {
       await this.categoryService.remove(id);
-      res.status(HttpStatus.OK).json({ message: `Category with ID ${id} deleted successfully` });
+      const responseData = { message: `Category with ID ${id} deleted successfully`, status: HttpStatus.OK };
+      res.status(HttpStatus.OK).json(responseData);
     } catch (error) {
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+      const responseData = { message: 'Internal server error', status: HttpStatus.INTERNAL_SERVER_ERROR };
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(responseData);
     }
   }
 }
