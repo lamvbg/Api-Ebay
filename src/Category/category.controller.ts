@@ -1,10 +1,11 @@
 // src/category/category.controller.ts
 
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Res, UseGuards } from '@nestjs/common';
 import { Category } from './entities';
 import { CategoryService } from './category.service';
 import { RolesGuard } from 'src/auth/utils/role.middleware';
 import { JAuthGuard } from 'src/auth/utils/authMiddleWare';
+import { Response } from 'express';
 
 @Controller('categories')
 export class CategoryController {
@@ -27,9 +28,12 @@ export class CategoryController {
   }
 
   @Delete(':id')
-  @UseGuards(JAuthGuard, RolesGuard)
-  async remove(@Param('id') id: number): Promise<{ message: string }> {
+  async remove(@Param('id') id: number, @Res() res: Response): Promise<void> {
+    try {
       await this.categoryService.remove(id);
-      return { message: `Category with ID ${id} deleted successfully` };
+      res.status(HttpStatus.OK).json({ message: `Category with ID ${id} deleted successfully` });
+    } catch (error) {
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+    }
   }
 }

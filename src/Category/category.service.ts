@@ -15,7 +15,7 @@ export class CategoryService {
     private translationService: GoogleTranslateService,
     @InjectRepository(ProductEntity)
     private productRepository: Repository<ProductEntity>,
-  ) {}
+  ) { }
 
   async findAll(): Promise<Category[]> {
     return await this.categoryRepository.find();
@@ -34,17 +34,19 @@ export class CategoryService {
       const englishName = await this.translationService.translateText(categoryData.vietnameseName, 'en');
       categoryData.englishName = englishName;
     }
-    
+
     const category = this.categoryRepository.create(categoryData);
     return await this.categoryRepository.save(category);
   }
 
-  async remove(id: number): Promise<any> {
+  async remove(id: number): Promise<{ message: string }> {
     const productsInCategory = await this.productRepository.find({ where: { category: { id } } });
     if (productsInCategory.length > 0) {
         await this.productRepository.delete({ category: { id } });
     }
     await this.categoryRepository.delete(id);
+
+    return { message: `Category with ID ${id} has been successfully deleted` };
 }
-  
+
 }
