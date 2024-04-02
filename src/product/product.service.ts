@@ -294,19 +294,23 @@ export class EbayService {
     const products = await this.productRepository.find();
     await Promise.all(products.map(async product => {
       const initialPrice = product.price[0].value;
-      const useOldWarrantyFees = oldWarrantyFees !== null ? oldWarrantyFees : warrantyFee;
-
-        for (const key in useOldWarrantyFees) {
-          if (useOldWarrantyFees.hasOwnProperty(key)) {
-            // const fee = parseFloat(useOldWarrantyFees[key].toString());
-            const newFee = parseFloat(warrantyFee[key].toString());
-            const updatedFee = ((newFee * initialPrice) / 100).toFixed(2);
-            product.warrantyFees[key] = parseFloat(updatedFee);
-          }
+      const updatedWarrantyFee = { ...warrantyFee };
+      for (const key in product.warrantyFees) {
+        if (!(key in updatedWarrantyFee)) {
+          delete product.warrantyFees[key];
         }
-        await this.productRepository.save(product);
-    }))
-  }
+      }
+      for (const key in updatedWarrantyFee) {
+        if (updatedWarrantyFee.hasOwnProperty(key)) {
+          const newFee = updatedWarrantyFee[key];
+          const updatedFee = ((newFee * initialPrice) / 100).toFixed(2);
+          product.warrantyFees[key] = parseFloat(updatedFee);
+        }
+      }
+  
+      await this.productRepository.save(product);
+    }));
+  }  
 
   async findAll(paginationQuery: PaginationQueryDto): Promise<PaginatedProductsResultDto> {
     let { page, limit, minPrice, maxPrice, category, marketingPrice, condition } = paginationQuery;
