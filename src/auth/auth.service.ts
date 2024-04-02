@@ -120,6 +120,11 @@ export class AuthService {
     }
   }
   
+  async findAllUsersWithUserRole(): Promise<UserEntity[]> {
+    return this.userRepository.createQueryBuilder('user')
+      .where('user.role = :role', { role: 'user' })
+      .getMany();
+  }
 
   async deleteOldImages(user: UserEntity): Promise<void> {
     if (user.avatar) {
@@ -127,6 +132,7 @@ export class AuthService {
       await this.cloudinaryService.deleteImage(publicId);
     }
   }  
+  
 
   private async uploadAndReturnUrl(file: Multer.File): Promise<string> {
     try {

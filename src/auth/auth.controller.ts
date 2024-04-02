@@ -99,4 +99,10 @@ export class AuthController {
     }
   }
 
+  @Get()
+  @UseGuards(JAuthGuard, RolesGuard)
+  async findAllUsersWithUserRole(): Promise<UserEntity[]> {
+    return this.authService.findAllUsersWithUserRole();
+  }
+
 }
