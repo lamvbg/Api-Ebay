@@ -157,6 +157,8 @@ export class EbayService {
 
       const newMarketingPrice = product.marketingPrice;
 
+      const newWanrrantyFees = product.warrantyFees;
+
       if (product) {
         if (!Array.isArray(product.price)) {
           product.price = [];
@@ -202,7 +204,8 @@ export class EbayService {
           value: newPrice
         },
         marketingPrice: newMarketingPrice,
-        localizedAspects: localizedAspectsUpdate
+        localizedAspects: localizedAspectsUpdate,
+        warrantyFee : newWanrrantyFees,
       };
     } catch (error) {
       throw error;
