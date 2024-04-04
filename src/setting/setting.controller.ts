@@ -21,14 +21,22 @@ export class SettingController {
     { name: 'bannerTopImage', maxCount: 10 },
     { name: 'bannerBotImage', maxCount: 10 },
     { name: 'slideImage', maxCount: 10 },
+    { name: 'bankUrl', maxCount: 1 }
   ]))
-  async create(@Body() setting: Partial<Setting>,
-    @UploadedFiles() files: { bannerTopImage?: Multer.File[], slideImage?: Multer.File[], bannerBotImage?: Multer.File[] }
+  async create(
+    @Body() settingData: Partial<Setting>,
+    @UploadedFiles() files: {
+      bannerTopImages?: Multer.File[],
+      slideImages?: Multer.File[],
+      bannerBotImages?: Multer.File[],
+      bankUrl?: Multer.File[],
+    },
   ): Promise<Setting> {
-    const bannerTopImages = files.bannerTopImage;
-    const bannerBotImages = files.bannerBotImage;
-    const slideImages = files.slideImage;
-    return this.settingService.create(setting, bannerTopImages, slideImages, bannerBotImages);
+    const bannerTopImages = files.bannerTopImages || [];
+    const bannerBotImages = files.bannerBotImages || [];
+    const slideImages = files.slideImages || [];
+    const bankUrl = files.bankUrl && files.bankUrl[0]; 
+    return this.settingService.create(settingData, bannerTopImages, slideImages, bannerBotImages, bankUrl);
   }
 
   @Put()
@@ -37,10 +45,11 @@ export class SettingController {
     { name: 'bannerTopImage', maxCount: 10 },
     { name: 'bannerBotImage', maxCount: 10 },
     { name: 'slideImage', maxCount: 10 },
+    { name: 'bankUrl', maxCount: 1 }
   ]))
   async update(
     @Body() updatedSetting: Partial<Setting>,
-    @UploadedFiles() files: { bannerTopImage?: Multer.File[], slideImage?: Multer.File[], bannerBotImage?: Multer.File[] }
+    @UploadedFiles() files: { bannerTopImage?: Multer.File[], slideImage?: Multer.File[], bannerBotImage?: Multer.File[],bankUrl?: Multer.File[],  }
   ): Promise<Setting> {
     const existingSetting = await this.settingService.findOne();
     const oldRatioPrice = existingSetting ? existingSetting.ratioPrice : null;
@@ -48,6 +57,7 @@ export class SettingController {
     const bannerTopImages = files.bannerTopImage;
     const bannerBotImages = files.bannerBotImage;
     const slideImages = files.slideImage;
-    return this.settingService.update(updatedSetting, oldRatioPrice, oldWarrantyFees, bannerTopImages, slideImages, bannerBotImages);
+    const bankUrl = files.bankUrl && files.bankUrl[0];
+    return this.settingService.update(updatedSetting, oldRatioPrice, oldWarrantyFees, bannerTopImages, slideImages, bannerBotImages, bankUrl);
   }  
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, NotFoundException, Param, ParseIntPipe, Put, Redirect, Req, Res, UnauthorizedException, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, NotFoundException, Param, ParseIntPipe, Put, Redirect, Req, Res, UnauthorizedException, UploadedFile, UseGuards, UseInterceptors, Headers } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { FacebookAuthGuard, GoogleAuthGuard } from './utils/Guards';
 import { JAuthGuard } from './utils/authMiddleWare';
@@ -45,6 +45,23 @@ export class AuthController {
     }
   }
   
+  @Get('validate-token')
+async validateToken(@Headers('Authorization') token: string): Promise<{ isValid: boolean }> {
+  try {
+    if (!token) {
+      throw new UnauthorizedException('Token is missing');
+    }
+
+    const user = await this.authService.validateUserFromToken(token.replace('Bearer ', ''));
+    return { isValid: !!user };
+  } catch (error) {
+    if (error instanceof UnauthorizedException) {
+      throw error;
+    }
+    throw new UnauthorizedException('Invalid token');
+  }
+}
+
   @Put(':id')
   @UseGuards(JAuthGuard)
   @UseInterceptors(FileInterceptor('avatar'))

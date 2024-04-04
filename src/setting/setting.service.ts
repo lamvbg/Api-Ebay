@@ -23,16 +23,18 @@ export class SettingService {
     return this.settingRepository.findOne({ where: {} });
   }
 
-  async create(settingData: Partial<Setting>, bannerTopImages: Multer.File[], slideImages: Multer.File[], bannerBotImages: Multer.File[]): Promise<Setting> {
+  async create(settingData: Partial<Setting>, bannerTopImages: Multer.File[], slideImages: Multer.File[], bannerBotImages: Multer.File[],bankUrl?: Multer.File ): Promise<Setting> {
     const bannerTopUrls = await Promise.all(bannerTopImages.map(async bannerTopImage => this.uploadAndReturnUrl(bannerTopImage)));
     const bannerBotUrls = await Promise.all(bannerBotImages.map(async bannerBotImage => this.uploadAndReturnUrl(bannerBotImage)));
     const slideUrls = await Promise.all(slideImages.map(async slideImage => this.uploadAndReturnUrl(slideImage)));
-
+    const bankUrls = await this.uploadAndReturnUrl(bankUrl);
+    
     const setting: Partial<Setting> = {
       ...settingData,
       bannerTop: bannerTopUrls.map(url => ({ bannerTopImg: url })),
       bannerBot: bannerBotUrls.map(url => ({ bannerBotImg: url })),
       slide: slideUrls.map(url => ({ slideImg: url })),
+      bankUrl: bankUrls
     };
 
     return this.settingRepository.save(setting);
@@ -44,7 +46,8 @@ export class SettingService {
     oldWarrantyFees: { [key: string]: number },
     bannerTopImages: Multer.File[],
     bannerBotImages: Multer.File[],
-    slideImages: Multer.File[]
+    slideImages: Multer.File[],
+    bankUrl?: Multer.File
   ): Promise<Setting> {
     const existingSetting = await this.settingRepository.findOne({ where: {} });
     await this.deleteOldImages(existingSetting);
@@ -62,10 +65,12 @@ export class SettingService {
     const bannerTopUrls = await Promise.all(bannerTopImages.map(async bannerTopImage => this.uploadAndReturnUrl(bannerTopImage)));
     const bannerBotUrls = await Promise.all(bannerBotImages.map(async bannerBotImage => this.uploadAndReturnUrl(bannerBotImage)));
     const slideUrls = await Promise.all(slideImages.map(async slideImage => this.uploadAndReturnUrl(slideImage)));
+    const bankUrls = await this.uploadAndReturnUrl(bankUrl);
   
     updatedSettingEntity.bannerTop = bannerTopUrls.map(url => ({ bannerTopImg: url }));
     updatedSettingEntity.bannerBot = bannerBotUrls.map(url => ({ bannerBotImg: url }));
     updatedSettingEntity.slide = slideUrls.map(url => ({ slideImg: url }));
+    updatedSettingEntity.bankUrl = bankUrls;
   
     const updatedSettingResult = await this.settingRepository.save(updatedSettingEntity);
     return updatedSettingResult;
@@ -86,6 +91,9 @@ export class SettingService {
     setting.bannerTop.forEach(banner => oldImages.push(banner.bannerTopImg));
     setting.bannerBot.forEach(banner => oldImages.push(banner.bannerBotImg));
     setting.slide.forEach(slide => oldImages.push(slide.slideImg));
+    if (setting.bankUrl) {
+      oldImages.push(setting.bankUrl);
+    }
     await Promise.all(oldImages.map(async imageUrl => {
       const publicId = this.cloudinaryService.extractPublicIdFromUrl(imageUrl);
       await this.cloudinaryService.deleteImage(publicId);

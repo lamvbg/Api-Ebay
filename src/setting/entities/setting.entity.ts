@@ -22,4 +22,10 @@ export class Setting {
     
     @Column({ type: 'jsonb', nullable: true, default: {} })
     warrantyFees: { [key: string]: number };
+
+    @Column({ nullable: true })
+    bankUrl: string;
+    
+    @Column({ nullable: true })
+    bankInfoName: string;
 }

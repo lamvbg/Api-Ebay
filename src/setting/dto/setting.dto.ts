@@ -5,4 +5,6 @@ export class UpdateSettingDto {
     ratioPrice?: number;
     ratioDiscount?: number;
     weightBasedPrice?: number;
+    bankUrl?: string;
+    bankInfoName: string;
 }
