@@ -22,6 +22,4 @@ export class CartEntity {
   @Column({ nullable: true })
   warrantyFee: number;
 
-  @Column({ nullable: true })
-  warrantyType: string; 
 }

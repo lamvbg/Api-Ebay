@@ -43,7 +43,6 @@ export class SettingService {
 async update(
   updatedSetting: Partial<Setting>,
   oldRatioPrice: number,
-  oldWarrantyFees: { [key: string]: number },
   bannerTopImages: Multer.File[],
   slideImages: Multer.File[],
   bannerBotImages: Multer.File[],
@@ -53,10 +52,6 @@ async update(
   await this.deleteOldImages(existingSetting);
   const mergedSetting = this.settingRepository.merge(existingSetting, updatedSetting);
   const updatedSettingEntity = await this.settingRepository.save(mergedSetting);
-
-  if (JSON.stringify(updatedSettingEntity.warrantyFees) !== JSON.stringify(oldWarrantyFees)) {
-    await this.ebayService.updateWarrantyFees(updatedSettingEntity.warrantyFees, oldWarrantyFees);
-  }
 
   if (Number(updatedSettingEntity.ratioPrice) !== Number(oldRatioPrice)) {
     await this.ebayService.updatePricesAccordingToRatio(updatedSettingEntity.ratioPrice, oldRatioPrice);
@@ -117,14 +112,5 @@ async update(
       console.error('Error uploading image to Cloudinary:', error);
       throw error;
     }
-  }
-
-  async getWarrantyFee(warrantyType: string, id: number): Promise<number | null> {
-    const setting = await this.settingRepository.findOne({where: {id}});
-    if (!setting) {
-      return null;
-    }
-    const warrantyFee = setting.warrantyFees[warrantyType];
-    return warrantyFee !== undefined ? warrantyFee : null;
   }
 }

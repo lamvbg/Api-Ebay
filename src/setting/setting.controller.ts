@@ -53,11 +53,10 @@ export class SettingController {
   ): Promise<Setting> {
     const existingSetting = await this.settingService.findOne();
     const oldRatioPrice = existingSetting ? existingSetting.ratioPrice : null;
-    const oldWarrantyFees = existingSetting ? existingSetting.warrantyFees : null;
     const slideImages = files.slideImage;
     const bannerTopImages = files.bannerTopImage && files.bannerTopImage[0];
     const bannerBotImages = files.bannerBotImage && files.bannerBotImage[0];
     const bankUrl = files.bankUrl && files.bankUrl[0];
-    return this.settingService.update(updatedSetting, oldRatioPrice, oldWarrantyFees, bannerTopImages, slideImages, bannerBotImages, bankUrl);
+    return this.settingService.update(updatedSetting, oldRatioPrice, bannerTopImages, slideImages, bannerBotImages, bankUrl);
   }  
 }

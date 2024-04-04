@@ -1,8 +1,7 @@
-// order/order.entity.ts
 
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { UserEntity } from '../../user/entities';
-import { ProductEntity } from '../../product/entities';
+import { OrderItemEntity } from './orderItem.entity';
 
 @Entity({ name: 'Order' })
 export class OrderEntity {
@@ -12,11 +11,8 @@ export class OrderEntity {
   @ManyToOne(() => UserEntity, user => user.orders)
   user: UserEntity;
 
-  @ManyToOne(() => ProductEntity, product => product.orders)
-  product: ProductEntity;
-
-  @Column()
-  quantity: number;
+  @OneToMany(() => OrderItemEntity, orderItem => orderItem.order, { cascade: true })
+  orderItems: OrderItemEntity[];
 
   @Column()
   totalPrice: number;
@@ -24,8 +20,6 @@ export class OrderEntity {
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   shippingFee: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
-  warrantyFee: number;
 
   @Column({ nullable: true })
   address: string;

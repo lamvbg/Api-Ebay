@@ -57,24 +57,11 @@ export class EbayService {
             throw new Error(`Category with English name ${categoryEnglishName} not found`);
           }
           newProduct.category = category;
-          newProduct.warrantyFees = {};
 
           const oldRatioPrice = await this.settingService.getRatioPrice()
           const newPrice = newPriceValue * oldRatioPrice + 1300;
           const newOriginal = newOriginalPrice * oldRatioPrice;
           const newDiscount = newDiscountAmount * oldRatioPrice;
-
-          const setting = await this.settingRepository.findOne({ where: {} })
-          const oldWarrantyFees = setting.warrantyFees;
-          console.log(oldWarrantyFees)
-
-            for (const key in oldWarrantyFees) {
-              if (oldWarrantyFees.hasOwnProperty(key)) {
-                const fee = parseFloat(oldWarrantyFees[key].toString());
-                const updatedFee = ((fee * newPrice) / 100).toFixed(2);
-                newProduct.warrantyFees[key] = parseFloat(updatedFee);
-              }
-          }
 
           const newPriceEntry = {
             lastUpdated: new Date(),
@@ -157,7 +144,6 @@ export class EbayService {
 
       const newMarketingPrice = product.marketingPrice;
 
-      const newWanrrantyFees = product.warrantyFees;
 
       if (product) {
         if (!Array.isArray(product.price)) {
@@ -205,7 +191,6 @@ export class EbayService {
         },
         marketingPrice: newMarketingPrice,
         localizedAspects: localizedAspectsUpdate,
-        warrantyFee : newWanrrantyFees,
       };
     } catch (error) {
       throw error;
@@ -290,27 +275,6 @@ export class EbayService {
     }));
   }
 
-  async updateWarrantyFees(warrantyFee: { [key: string]: number }, oldWarrantyFees: { [key: string]: number } | null): Promise<void> {
-    const products = await this.productRepository.find();
-    await Promise.all(products.map(async product => {
-      const initialPrice = product.price[0].value;
-      const updatedWarrantyFee = { ...warrantyFee };
-      for (const key in product.warrantyFees) {
-        if (!(key in updatedWarrantyFee)) {
-          delete product.warrantyFees[key];
-        }
-      }
-      for (const key in updatedWarrantyFee) {
-        if (updatedWarrantyFee.hasOwnProperty(key)) {
-          const newFee = updatedWarrantyFee[key];
-          const updatedFee = ((newFee * initialPrice) / 100).toFixed(2);
-          product.warrantyFees[key] = parseFloat(updatedFee);
-        }
-      }
-  
-      await this.productRepository.save(product);
-    }));
-  }  
 
   async findAll(paginationQuery: PaginationQueryDto): Promise<PaginatedProductsResultDto> {
     let { page, limit, minPrice, maxPrice, category, marketingPrice, condition } = paginationQuery;

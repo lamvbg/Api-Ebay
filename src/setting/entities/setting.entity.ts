@@ -21,7 +21,7 @@ export class Setting {
     weightBasedPrice: number;
     
     @Column({ type: 'jsonb', nullable: true, default: {} })
-    warrantyFees: { [key: string]: number };
+    warrantyFees: { duration: number; fee: number }[];
 
     @Column({ nullable: true })
     bankUrl: string;

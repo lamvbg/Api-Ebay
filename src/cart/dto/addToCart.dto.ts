@@ -3,5 +3,5 @@ export class AddToCartDto {
     productId: string;
     quantity: number;
     totalPrice: number;
-    warrantyType: string; 
+    warrantyFee: number; 
 }

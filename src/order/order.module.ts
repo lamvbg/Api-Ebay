@@ -19,9 +19,10 @@ import { GoogleTranslateService } from 'src/product/translation.service';
 import { CategoryService } from 'src/Category/category.service';
 import { MySchedulerService } from 'src/product/utils/my-scheduler.service';
 import { Category } from 'src/Category/entities';
+import { OrderItemEntity } from './entities/orderItem.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([OrderEntity, ProductEntity, UserEntity, Setting, Category]),JwtModule.register({
+  imports: [TypeOrmModule.forFeature([OrderEntity, ProductEntity, UserEntity, Setting, Category, OrderItemEntity]),JwtModule.register({
     secret: 'asiodasjoddjdoasddasoidjasiodasdjaiodd',
     signOptions: { expiresIn: '24h' },
   })],

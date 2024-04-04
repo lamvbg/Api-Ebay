@@ -19,31 +19,26 @@ export class CartService {
 
 
   async addToCart(addToCartDto: AddToCartDto): Promise<CartEntity> {
-    const { userId, productId, quantity, totalPrice, warrantyType } = addToCartDto;
+    const { userId, productId, quantity, totalPrice, warrantyFee } = addToCartDto;
     let cartItem = await this.cartRepository.findOne({ where: { user: { id: userId }, product: { id: productId } } });
-
+  
     const product = await this.productRepository.findOne({ where: { id: productId } });
     if (!product) {
       throw new NotFoundException(`Product with ID ${productId} not found.`);
     }
-    const warrantyFee = product.warrantyFees[warrantyType];
-    const totalWarrantyFee = warrantyFee * (quantity || 1);
-
-    if (cartItem && cartItem.warrantyType === warrantyType) {
-      cartItem.quantity += quantity || 1;
-      cartItem.warrantyFee += totalWarrantyFee;
-      warrantyFee;
-      return await this.cartRepository.save(cartItem);
-    } else {
+  
+    if (!cartItem) {
       const newCartItem = this.cartRepository.create({
         user: { id: userId },
         product: { id: productId },
         quantity: quantity || 1,
         totalPrice,
-        warrantyFee: totalWarrantyFee,
-        warrantyType
+        warrantyFee
       });
       return await this.cartRepository.save(newCartItem);
+    } else {
+      cartItem.quantity += quantity || 1;
+      return await this.cartRepository.save(cartItem);
     }
   }
 
@@ -67,14 +62,6 @@ export class CartService {
         cartItem.product = product;
     }
 
-    if (updatedData.warrantyType) {
-      const productId = cartItem.product.id;
-      const product = await this.productRepository.findOne({ where: { id: productId } });
-      if (!product) {
-          throw new NotFoundException(`Product with ID ${productId} not found.`);
-      }
-      updatedData.warrantyFee = product.warrantyFees[updatedData.warrantyType] * (updatedData.quantity || 1);
-  }
     Object.assign(cartItem, updatedData);
 
     return await this.cartRepository.save(cartItem);
