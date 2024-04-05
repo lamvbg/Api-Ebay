@@ -46,16 +46,15 @@ export class OrderController {
 
   @Post()
   @UseGuards(JAuthGuard)
-  async create(@Body() orderDto: OrderDto,id, @Req() request): Promise<OrderEntity> {
+  async create(@Body() orderDto: OrderDto, @Req() request): Promise<OrderEntity> {
     try {
       const authenticatedUserId = request.user.sub;
-      console.log(authenticatedUserId);
 
-      if (authenticatedUserId != orderDto.userId) {
+      if (authenticatedUserId !== orderDto.userId) {
         throw new UnauthorizedException('You are not authorized to create this order.');
       }
 
-      return this.orderService.create(orderDto, id);
+      return this.orderService.create(orderDto, authenticatedUserId);
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         throw error;
@@ -66,8 +65,8 @@ export class OrderController {
 
   @Put(':id')
   @UseGuards(JAuthGuard, RolesGuard)
-  async update(@Param('id') id: string, @Body() data: Partial<OrderEntity>): Promise<OrderEntity> {
-    return this.orderService.update(+id, data);
+  async update(@Param('id') id: string, @Body() orderDto: OrderDto): Promise<OrderEntity> {
+    return this.orderService.update(orderDto, +id); 
   }
 
   @Delete(':id')

@@ -1,6 +1,6 @@
 export class OrderDto {
     userId: string;
-    products: { productId: string; quantity: number; warrantyFee: number; price: number;
+    products: { id:number, productId: string; quantity: number; warrantyFee: number; price: number;
     }[];
     shippingFee: number;
     warrantyFee: number; 

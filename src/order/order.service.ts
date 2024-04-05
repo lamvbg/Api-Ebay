@@ -22,15 +22,15 @@ export class OrderService {
     private readonly userRepository: Repository<UserEntity>,
     @InjectRepository(OrderItemEntity)
     private readonly orderItemRepository: Repository<OrderItemEntity>,
-  ) {}
+  ) { }
 
-    async findAll(): Promise<OrderEntity[]> {
-      return this.orderRepository.find({ relations: ["user", "orderItems", "orderItems.product"] });
-    }
+  async findAll(): Promise<OrderEntity[]> {
+    return this.orderRepository.find({ relations: ["user", "orderItems", "orderItems.product"] });
+  }
 
   async findOne(id: number): Promise<OrderEntity> {
-    return this.orderRepository.findOne({ where: { id }, relations: ["user", "orderItems", "orderItems.product"]} );
-  }  
+    return this.orderRepository.findOne({ where: { id }, relations: ["user", "orderItems", "orderItems.product"] });
+  }
   async findByUserId(userId: string): Promise<OrderEntity[]> {
     const orders = await this.orderRepository.find({
       where: { user: { id: userId } },
@@ -44,59 +44,81 @@ export class OrderService {
     return orders;
   }
 
- async create(orderDto: OrderDto, id: number): Promise<OrderEntity> {
+  async create(orderDto: OrderDto, id: number): Promise<OrderEntity> {
     const { products, totalPrice, createdAt, userId, shippingFee, address, phone } = orderDto;
 
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
-        throw new NotFoundException(`User with ID ${userId} not found.`);
+      throw new NotFoundException(`User with ID ${userId} not found.`);
     }
+
+    if (user.address === null) {
+      user.address = address;
+    }
+    if (user.phone === null) {
+      user.phone = phone;
+    }
+
+    await this.userRepository.save(user);
 
     const orderItems = [];
     for (const productData of products) {
-        const { productId, quantity, warrantyFee, price } = productData;
-        const product = await this.productRepository.findOne({ where: { id: productId } });
-        if (!product) {
-            throw new NotFoundException(`Product with ID ${productId} not found.`);
-        }
+      const { productId, quantity, warrantyFee, price } = productData;
+      const product = await this.productRepository.findOne({ where: { id: productId } });
+      if (!product) {
+        throw new NotFoundException(`Product with ID ${productId} not found.`);
+      }
 
-        const quantityValue = quantity || 1;
+      const quantityValue = quantity || 1;
 
-        const orderItem = this.orderItemRepository.create({
-            user,
-            product,
-            quantity: quantityValue,
-            warrantyFee,
-            price
-        });
-        orderItems.push(orderItem);
+      const orderItem = this.orderItemRepository.create({
+        user,
+        product,
+        quantity: quantityValue,
+        warrantyFee,
+        price
+      });
+      orderItems.push(orderItem);
     }
 
     const newOrder = this.orderRepository.create({
-        user,
-        orderItems: orderItems,
-        shippingFee,
-        totalPrice,
-        address,
-        createdAt,
-        phone
+      user,
+      orderItems: orderItems,
+      shippingFee,
+      totalPrice,
+      address,
+      createdAt,
+      phone
     });
 
     return await this.orderRepository.save(newOrder);
-}
+  }
 
+  async update(orderDto: OrderDto, id: number): Promise<OrderEntity> {
+    const order = await this.orderRepository.findOne({
+      where: { id },
+      relations: ["user", "orderItems", "orderItems.product"]
+    });
 
-  async update(orderId: number, data: Partial<OrderEntity>): Promise<OrderEntity> {
-    const order = await this.orderRepository.findOne({ where: { id: orderId } });
     if (!order) {
-        throw new NotFoundException(`Order with ID ${orderId} not found.`);
+      throw new NotFoundException(`Order with ID ${id} not found.`);
     }
 
-    Object.assign(order, data);
+    for (const productData of orderDto.products) {
+      const orderItem = order.orderItems.find(item => item.id === productData.id);
+      if (orderItem) {
+        orderItem.warrantyFee = productData.warrantyFee;
+        orderItem.quantity = productData.quantity;
+        orderItem.price = productData.price;
+      }
+    }
 
-    return this.orderRepository.save(order);
-}
+    await this.orderRepository.save(order);
 
+    return order;
+  }
+  
+  
 
   async remove(id: number): Promise<void> {
     await this.orderRepository.delete(id);

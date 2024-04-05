@@ -32,7 +32,7 @@ export class UserEntity {
   address: string;
 
   @Column({ nullable: true })
-  phoneNumber: string;
+  phone: string;
 
   @OneToMany(() => OrderEntity, order => order.user)
   orders: OrderEntity[];

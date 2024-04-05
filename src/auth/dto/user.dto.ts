@@ -9,5 +9,5 @@ export class UpdateUserDto {
    
   address?: string;
    
-  phoneNumber?: string;
+  phone?: string;
 }

@@ -110,8 +110,8 @@ export class AuthService {
       if (updateUserDto.address) {
         user.address = updateUserDto.address;
       }
-      if (updateUserDto.phoneNumber) {
-        user.phoneNumber = updateUserDto.phoneNumber;
+      if (updateUserDto.phone) {
+        user.phone = updateUserDto.phone;
       }
   
       return await this.userRepository.save(user);
