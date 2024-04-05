@@ -45,7 +45,7 @@ export class OrderService {
   }
 
  async create(orderDto: OrderDto, id: number): Promise<OrderEntity> {
-    const { products, totalPrice, createdAt, userId, shippingFee, address } = orderDto;
+    const { products, totalPrice, createdAt, userId, shippingFee, address, phone } = orderDto;
 
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
@@ -54,7 +54,7 @@ export class OrderService {
 
     const orderItems = [];
     for (const productData of products) {
-        const { productId, quantity, warrantyFee } = productData;
+        const { productId, quantity, warrantyFee, price } = productData;
         const product = await this.productRepository.findOne({ where: { id: productId } });
         if (!product) {
             throw new NotFoundException(`Product with ID ${productId} not found.`);
@@ -67,17 +67,19 @@ export class OrderService {
             product,
             quantity: quantityValue,
             warrantyFee,
+            price
         });
         orderItems.push(orderItem);
     }
 
     const newOrder = this.orderRepository.create({
         user,
-        orderItems: orderItems, // Thay đổi từ orderItems sang products
+        orderItems: orderItems,
         shippingFee,
         totalPrice,
         address,
-        createdAt
+        createdAt,
+        phone
     });
 
     return await this.orderRepository.save(newOrder);

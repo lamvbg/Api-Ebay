@@ -25,4 +25,7 @@ export class OrderEntity {
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
+
+  @Column()
+  phone: string;
 }

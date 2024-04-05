@@ -23,4 +23,6 @@ export class OrderItemEntity {
     @Column({ nullable: true })
     warrantyFee: number;
 
+    @Column()
+    price: number;
 }
