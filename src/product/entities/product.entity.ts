@@ -53,4 +53,7 @@ export class ProductEntity {
 
   @OneToMany(() => OrderItemEntity, order => order.product)
   orders: OrderItemEntity[];
+
+  @Column({ default: false })
+  isUpdated: boolean;
 }

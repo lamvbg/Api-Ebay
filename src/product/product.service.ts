@@ -46,6 +46,10 @@ export class EbayService {
         const priceTreatment = itemSummary.marketingPrice ? parseFloat(itemSummary.marketingPrice.priceTreatment) : 0;
 
         const existingProduct = await this.productRepository.findOne({ where: { id: itemId } });
+        if (existingProduct && existingProduct.isUpdated) {
+          console.log(`Product with ID ${itemId} has been updated recently. Skipping price update.`);
+          continue;
+        }
 
         if (!existingProduct) { //Update rồi mà có thì update các giá trị price xong tính lại maketing price
           const newProduct = new ProductEntity();
@@ -275,7 +279,6 @@ export class EbayService {
     }));
   }
 
-
   async findAll(paginationQuery: PaginationQueryDto): Promise<PaginatedProductsResultDto> {
     let { page, limit, minPrice, maxPrice, category, marketingPrice, condition } = paginationQuery;
 
@@ -346,6 +349,10 @@ export class EbayService {
       const existingProduct = await this.productRepository.findOne({ where: { id } });
       if (!existingProduct) {
         throw new NotFoundException(`Product with ID ${id} not found.`);
+      }
+
+      if (productData.isUpdated === false) {
+        existingProduct.isUpdated = false;
       }
 
       if (productData.marketingPrice && productData.marketingPrice.discountPercentage) {
