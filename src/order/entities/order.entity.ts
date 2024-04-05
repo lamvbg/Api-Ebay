@@ -20,7 +20,6 @@ export class OrderEntity {
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   shippingFee: number;
 
-
   @Column({ nullable: true })
   address: string;
 

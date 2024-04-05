@@ -35,7 +35,7 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
       };
 
       const token = this.jwtService.sign(payload);
-      const redirectURL = `http://localhost:5173?token=${token}`;
+      const redirectURL = `https://ebay-store.onrender.com=${token}`;
       console.log(payload)
       // console.log(token)
       return { accessToken: token, redirectURL };
