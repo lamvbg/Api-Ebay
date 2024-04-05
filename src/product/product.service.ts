@@ -47,7 +47,7 @@ export class EbayService {
 
         const existingProduct = await this.productRepository.findOne({ where: { id: itemId } });
 
-        if (!existingProduct) {
+        if (!existingProduct) { //Update rồi mà có thì update các giá trị price xong tính lại maketing price
           const newProduct = new ProductEntity();
           const category = await this.categoryService.findOneByEnglishName(categoryEnglishName);
 
