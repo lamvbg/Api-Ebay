@@ -61,8 +61,7 @@ export class SettingService {
     if (Number(updatedSettingEntity.ratioPrice) !== Number(oldRatioPrice)) {
       await this.ebayService.updatePricesAccordingToRatio(updatedSettingEntity.ratioPrice, oldRatioPrice);
     }
-  
-    // Only upload new images if they are provided
+    
     const bannerTopUrls = bannerTopImages.length > 0 ? await this.uploadAndReturnUrl(bannerTopImages) : existingSetting.bannerTop;
     const bannerBotUrls = bannerBotImages.length > 0 ? await this.uploadAndReturnUrl(bannerBotImages) : existingSetting.bannerBot;
     const slideUrls = slideImages.length > 0 ? await Promise.all(slideImages.map(async slideImage => this.uploadAndReturnUrl(slideImage))) : existingSetting.slide.map(slide => slide.slideImg);
