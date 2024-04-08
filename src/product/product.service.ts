@@ -51,7 +51,7 @@ export class EbayService {
           continue;
         }
 
-        if (!existingProduct) { //Update rồi mà có thì update các giá trị price xong tính lại maketing price
+        if (!existingProduct) {
           const newProduct = new ProductEntity();
           const category = await this.categoryService.findOneByEnglishName(categoryEnglishName);
 
@@ -118,6 +118,11 @@ export class EbayService {
           } else {
             console.error(`Invalid current price or ratio price for product with ID ${itemId}`);
           }
+        }
+        if (existingProduct && !itemSummary.marketingPrice) {
+          existingProduct.marketingPrice = null;
+          await this.productRepository.save(existingProduct);
+          console.log(`Marketing price is null for product with ID ${itemId}`);
         }
       }
 
