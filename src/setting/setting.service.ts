@@ -40,37 +40,42 @@ export class SettingService {
     return this.settingRepository.save(setting);
   }
 
-async update(
-  updatedSetting: Partial<Setting>,
-  oldRatioPrice: number,
-  bannerTopImages: Multer.File[],
-  slideImages: Multer.File[],
-  bannerBotImages: Multer.File[],
-  bankUrl?: Multer.File
-): Promise<Setting> {
-  const existingSetting = await this.settingRepository.findOne({ where: {} });
-  await this.deleteOldImages(existingSetting);
-  const mergedSetting = this.settingRepository.merge(existingSetting, updatedSetting);
-  const updatedSettingEntity = await this.settingRepository.save(mergedSetting);
-
-  if (Number(updatedSettingEntity.ratioPrice) !== Number(oldRatioPrice)) {
-    await this.ebayService.updatePricesAccordingToRatio(updatedSettingEntity.ratioPrice, oldRatioPrice);
+  async update(
+    updatedSetting: Partial<Setting>,
+    oldRatioPrice: number,
+    bannerTopImages: Multer.File[] = [],
+    slideImages: Multer.File[] = [],
+    bannerBotImages: Multer.File[] = [],
+    bankUrl?: Multer.File
+  ): Promise<Setting> {
+    const existingSetting = await this.settingRepository.findOne({ where: {} });
+  
+    // Only delete old images if new images are provided
+    if (bannerTopImages.length > 0 || slideImages.length > 0 || bannerBotImages.length > 0 || bankUrl) {
+      await this.deleteOldImages(existingSetting);
+    }
+  
+    const mergedSetting = this.settingRepository.merge(existingSetting, updatedSetting);
+    const updatedSettingEntity = await this.settingRepository.save(mergedSetting);
+  
+    if (Number(updatedSettingEntity.ratioPrice) !== Number(oldRatioPrice)) {
+      await this.ebayService.updatePricesAccordingToRatio(updatedSettingEntity.ratioPrice, oldRatioPrice);
+    }
+  
+    // Only upload new images if they are provided
+    const bannerTopUrls = bannerTopImages.length > 0 ? await this.uploadAndReturnUrl(bannerTopImages) : existingSetting.bannerTop;
+    const bannerBotUrls = bannerBotImages.length > 0 ? await this.uploadAndReturnUrl(bannerBotImages) : existingSetting.bannerBot;
+    const slideUrls = slideImages.length > 0 ? await Promise.all(slideImages.map(async slideImage => this.uploadAndReturnUrl(slideImage))) : existingSetting.slide.map(slide => slide.slideImg);
+    const bankUrls = bankUrl ? await this.uploadAndReturnUrl(bankUrl) : existingSetting.bankUrl;
+  
+    updatedSettingEntity.bannerTop = bannerTopUrls;
+    updatedSettingEntity.bannerBot = bannerBotUrls;
+    updatedSettingEntity.slide = slideUrls.map(url => ({ slideImg: url }));
+    updatedSettingEntity.bankUrl = bankUrls;
+  
+    const updatedSettingResult = await this.settingRepository.save(updatedSettingEntity);
+    return updatedSettingResult;
   }
-
-  const bannerTopUrls = bannerTopImages ? await this.uploadAndReturnUrl(bannerTopImages) : null
-  const bannerBotUrls = bannerBotImages ? await this.uploadAndReturnUrl(bannerBotImages) : null
-  const slideUrls = await Promise.all(slideImages.map(async slideImage => this.uploadAndReturnUrl(slideImage)));
-  const bankUrls = bankUrl ? await this.uploadAndReturnUrl(bankUrl) : null;
-
-  updatedSettingEntity.bannerTop = bannerTopUrls;
-  updatedSettingEntity.bannerBot = bannerBotUrls;
-  updatedSettingEntity.slide = slideUrls.map(url => ({ slideImg: url }));
-  updatedSettingEntity.bankUrl = bankUrls;
-
-  const updatedSettingResult = await this.settingRepository.save(updatedSettingEntity);
-  return updatedSettingResult;
-}
-
   
   async getRatioPrice(): Promise<number | null> {
     const setting = await this.settingRepository.findOne({ where: {} });
