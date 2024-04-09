@@ -1,6 +1,7 @@
 import { DeliveryStatus, PaymentStatus } from "../entities";
 
 export class OrderDto {
+    id: string;
     userId: string;
     products: { id:number, productId: string; quantity: number; warrantyFee: number; price: number;
     }[];
@@ -11,4 +12,5 @@ export class OrderDto {
     phone: string;
     paymentStatus: PaymentStatus;
     deliveryStatus: DeliveryStatus;
+    paymentImg: string;
 }

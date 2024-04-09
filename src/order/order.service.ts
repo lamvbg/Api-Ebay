@@ -11,6 +11,8 @@ import { SettingService } from 'src/setting/setting.service';
 import { OrderItemEntity } from './entities/orderItem.entity';
 import { QueryDto } from './dto/queryDto.dto';
 import { PaginatedOrdersResultDto } from './dto/PaginationOrdersResultDto.dto';
+import { Multer } from 'multer';
+import { CloudinaryService } from 'src/setting/utils/file.service';
 
 @Injectable()
 export class OrderService {
@@ -20,6 +22,7 @@ export class OrderService {
     private settingService: SettingService,
     @InjectRepository(ProductEntity)
     private readonly productRepository: Repository<ProductEntity>,
+    private readonly cloudinaryService: CloudinaryService,
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
     @InjectRepository(OrderItemEntity)
@@ -45,6 +48,7 @@ export class OrderService {
       .leftJoinAndSelect('order.user', 'user')
       .leftJoinAndSelect('order.orderItems', 'orderItem')
       .leftJoinAndSelect('orderItem.product', 'product')
+      .orderBy('order.createdAt', 'DESC')
       .skip(offset)
       .take(limit);
 
@@ -81,13 +85,19 @@ export class OrderService {
   async findOne(id: number): Promise<OrderEntity> {
     return this.orderRepository.findOne({ where: { id }, relations: ["user", "orderItems", "orderItems.product"] });
   }
+
   async findByUserId(userId: string): Promise<OrderEntity[]> {
-    const orders = await this.orderRepository.find({
-      where: { user: { id: userId } },
-      relations: ["user", "orderItems", "orderItems.product"]
-    });
+    const queryBuilder = this.orderRepository.createQueryBuilder('order')
+        .leftJoinAndSelect('order.user', 'user')
+        .leftJoinAndSelect('order.orderItems', 'orderItem')
+        .leftJoinAndSelect('orderItem.product', 'product')
+        .where('user.id = :userId', { userId })
+        .orderBy('order.createdAt', 'DESC');
+
+    const orders = await queryBuilder.getMany();
     return orders || [];
-  }
+}
+
 
   async create(orderDto: OrderDto, id: number): Promise<OrderEntity> {
     const { products, totalPrice, createdAt, userId, shippingFee, address, phone } = orderDto;
@@ -124,6 +134,7 @@ export class OrderService {
       });
       orderItems.push(orderItem);
     }
+    
 
     const newOrder = this.orderRepository.create({
       user,
@@ -138,7 +149,7 @@ export class OrderService {
     return await this.orderRepository.save(newOrder);
   }
 
-  async update(orderDto: OrderDto, id: number): Promise<OrderEntity> {
+  async update(orderDto: OrderDto, id: number, paymentImage?: Multer.File): Promise<OrderEntity> {
     const order = await this.orderRepository.findOne({
       where: { id },
       relations: ["user", "orderItems", "orderItems.product"]
@@ -150,14 +161,11 @@ export class OrderService {
 
     if (orderDto.products) {
       for (const productData of orderDto.products) {
-        // Tìm OrderItem tương ứng trong order.orderItems
         const orderItem = order.orderItems.find(item => item.product.id === productData.productId);
         if (orderItem) {
-          // Cập nhật thông tin của OrderItem
           orderItem.quantity = productData.quantity;
           orderItem.warrantyFee = productData.warrantyFee;
           orderItem.price = productData.price;
-          // Lưu lại thay đổi trong orderItem
           await this.orderItemRepository.save(orderItem);
         } else {
         }
@@ -185,6 +193,10 @@ export class OrderService {
     if (orderDto.userId) {
       order.user.id = orderDto.userId;
     }
+    if (paymentImage) {
+      const paymentUrl = await this.uploadAndReturnUrl(paymentImage);
+      order.paymentImg = paymentUrl;
+    }
 
     await this.orderRepository.save(order);
 
@@ -195,5 +207,16 @@ export class OrderService {
 
   async remove(id: number): Promise<void> {
     await this.orderRepository.delete(id);
+  }
+
+  
+  private async uploadAndReturnUrl(file: Multer.File): Promise<string> {
+    try {
+      const result = await this.cloudinaryService.uploadImage(file);
+      return result.secure_url;
+    } catch (error) {
+      console.error('Error uploading image to Cloudinary:', error);
+      throw error;
+    }
   }
 }

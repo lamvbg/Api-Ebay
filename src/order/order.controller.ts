@@ -1,6 +1,6 @@
 // order/order.controller.ts
 
-import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, NotFoundException, UnauthorizedException, Req, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, NotFoundException, UnauthorizedException, Req, Query, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { OrderEntity } from './entities';
 import { OrderDto } from './dto/order.dto';
@@ -8,6 +8,9 @@ import { RolesGuard } from 'src/auth/utils/role.middleware';
 import { JAuthGuard } from 'src/auth/utils/authMiddleWare';
 import { QueryDto } from './dto/queryDto.dto';
 import { PaginatedOrdersResultDto } from './dto/PaginationOrdersResultDto.dto';
+import { Multer } from 'multer';
+import { FileInterceptor } from '@nestjs/platform-express';
+
 
 @Controller('order')
 export class OrderController {
@@ -67,8 +70,13 @@ export class OrderController {
 
   @Put(':id')
   @UseGuards(JAuthGuard, RolesGuard)
-  async update(@Param('id') id: string, @Body() orderDto: OrderDto): Promise<OrderEntity> {
-    return this.orderService.update(orderDto, +id); 
+  @UseInterceptors(FileInterceptor('paymentImg'))
+  async update(
+    @Param('id') id: string, 
+    @Body() orderDto: OrderDto,
+    @UploadedFile() paymentImg?: Multer.File,
+  ): Promise<OrderEntity> {
+    return this.orderService.update(orderDto, +id, paymentImg ); 
   }
 
   @Delete(':id')
