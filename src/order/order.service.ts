@@ -70,8 +70,6 @@ export class OrderService {
 
     const [data, totalCount] = await queryBuilder.getManyAndCount();
 
-    const totalPages = Math.ceil(totalCount / limit);
-
     return {
       data,
       totalCount,
@@ -89,11 +87,8 @@ export class OrderService {
       relations: ["user", "orderItems", "orderItems.product"]
     });
 
-    if (!orders || orders.length === 0) {
-      throw new NotFoundException(`Orders for user with ID ${userId} not found.`);
-    }
 
-    return orders;
+    return orders || [];
   }
 
   async create(orderDto: OrderDto, id: number): Promise<OrderEntity> {
