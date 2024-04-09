@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsOptional, IsPositive, Min } from 'class-validator';
+import {IsDateString, IsOptional, IsPositive,} from 'class-validator';
 
 export class QueryDto {
   @IsOptional()
@@ -15,9 +15,17 @@ export class QueryDto {
   phone?: string;
   userName?: string;
 
-  createdAt?: Date;
+  @IsOptional()
+  @IsDateString()
+  createdAtFrom?: string;
+
+  @IsOptional()
+  @IsDateString()
+  createdAtTo?: Date;
 
   paymentStatus? : string;
 
   deliveryStatus?: string
+  
+  createdAt: Date;
 }

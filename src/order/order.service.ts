@@ -30,7 +30,7 @@ export class OrderService {
   ) { }
 
   async findAll(query: QueryDto): Promise<PaginatedOrdersResultDto> {
-    let { page, limit, phone, userName, createdAt, paymentStatus, deliveryStatus } = query;
+    let { page, limit, phone, userName, createdAtFrom, createdAtTo, paymentStatus, deliveryStatus } = query;
 
     page = Number(page);
     limit = Number(limit);
@@ -60,8 +60,16 @@ export class OrderService {
       queryBuilder.andWhere('user.displayName = :userName', { userName });
     }
 
-    if (createdAt) {
-      queryBuilder.andWhere('order.createdAt = :createdAt', { createdAt });
+    if (createdAtFrom) {
+      const fromDate = new Date(createdAtFrom);
+      fromDate.setUTCHours(0, 0, 0, 0);
+      queryBuilder.andWhere('order.createdAt >= :createdAtFrom', { createdAtFrom: fromDate });
+    }
+
+    if (createdAtTo) {
+      const toDate = new Date(createdAtTo);
+      toDate.setUTCHours(23, 59, 59, 999);
+      queryBuilder.andWhere('order.createdAt <= :createdAtTo', { createdAtTo: toDate });
     }
 
     if (paymentStatus) {
@@ -88,15 +96,15 @@ export class OrderService {
 
   async findByUserId(userId: string): Promise<OrderEntity[]> {
     const queryBuilder = this.orderRepository.createQueryBuilder('order')
-        .leftJoinAndSelect('order.user', 'user')
-        .leftJoinAndSelect('order.orderItems', 'orderItem')
-        .leftJoinAndSelect('orderItem.product', 'product')
-        .where('user.id = :userId', { userId })
-        .orderBy('order.createdAt', 'DESC');
+      .leftJoinAndSelect('order.user', 'user')
+      .leftJoinAndSelect('order.orderItems', 'orderItem')
+      .leftJoinAndSelect('orderItem.product', 'product')
+      .where('user.id = :userId', { userId })
+      .orderBy('order.createdAt', 'DESC');
 
     const orders = await queryBuilder.getMany();
     return orders || [];
-}
+  }
 
 
   async create(orderDto: OrderDto, id: number): Promise<OrderEntity> {
@@ -134,7 +142,7 @@ export class OrderService {
       });
       orderItems.push(orderItem);
     }
-    
+
 
     const newOrder = this.orderRepository.create({
       user,
@@ -209,7 +217,7 @@ export class OrderService {
     await this.orderRepository.delete(id);
   }
 
-  
+
   private async uploadAndReturnUrl(file: Multer.File): Promise<string> {
     try {
       const result = await this.cloudinaryService.uploadImage(file);
