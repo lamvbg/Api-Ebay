@@ -16,4 +16,7 @@ export class CartEntity {
   @Column()
   quantity: number;
 
+  @Column({ nullable: true })
+  warrantyFee: number;
+
 }

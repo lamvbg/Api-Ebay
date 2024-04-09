@@ -19,7 +19,7 @@ export class CartService {
 
 
   async addToCart(addToCartDto: AddToCartDto): Promise<CartEntity> {
-    const { userId, productId, quantity } = addToCartDto;
+    const { userId, productId, quantity, warrantyFee } = addToCartDto;
     let cartItem = await this.cartRepository.findOne({ where: { user: { id: userId }, product: { id: productId } } });
   
     const product = await this.productRepository.findOne({ where: { id: productId } });
@@ -31,7 +31,8 @@ export class CartService {
       const newCartItem = this.cartRepository.create({
         user: { id: userId },
         product: { id: productId },
-        quantity: quantity || 1
+        quantity: quantity || 1,
+        warrantyFee
       });
       return await this.cartRepository.save(newCartItem);
     } else {
