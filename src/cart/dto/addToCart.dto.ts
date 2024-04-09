@@ -2,6 +2,4 @@ export class AddToCartDto {
     userId: string;
     productId: string;
     quantity: number;
-    totalPrice: number;
-    warrantyFee: number; 
 }

@@ -86,8 +86,6 @@ export class OrderService {
       where: { user: { id: userId } },
       relations: ["user", "orderItems", "orderItems.product"]
     });
-
-
     return orders || [];
   }
 
