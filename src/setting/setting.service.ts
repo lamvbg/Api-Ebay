@@ -132,9 +132,6 @@ export class SettingService {
       await this.cloudinaryService.deleteImage(publicId);
     }));
   }
-  
-  
-
 
   private async uploadAndReturnUrl(file: Multer.File): Promise<string> {
     try {

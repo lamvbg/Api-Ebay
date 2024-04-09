@@ -108,7 +108,7 @@ export class OrderService {
 
 
   async create(orderDto: OrderDto, id: number): Promise<OrderEntity> {
-    const { products, totalPrice, createdAt, userId, shippingFee, address, phone } = orderDto;
+    const { products, totalPrice, createdAt, userId, shippingFee, address, phone, depositAmount } = orderDto;
 
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
@@ -151,7 +151,8 @@ export class OrderService {
       totalPrice,
       address,
       createdAt,
-      phone
+      phone,
+      depositAmount
     });
 
     return await this.orderRepository.save(newOrder);
@@ -204,6 +205,10 @@ export class OrderService {
     if (paymentImage) {
       const paymentUrl = await this.uploadAndReturnUrl(paymentImage);
       order.paymentImg = paymentUrl;
+    }
+
+    if (orderDto.depositAmount) {
+      order.depositAmount = orderDto.depositAmount;
     }
 
     await this.orderRepository.save(order);

@@ -28,4 +28,7 @@ export class Setting {
     
     @Column({ nullable: true })
     bankInfoName: string;
+
+    @Column({ nullable: true })
+    depositAmount: number;
 }

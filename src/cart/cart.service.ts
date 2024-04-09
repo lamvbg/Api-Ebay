@@ -74,9 +74,6 @@ export class CartService {
     return updatedCartItems;
 }
 
-
-
-
   async deleteCartItem(cartItemId: number): Promise<void> {
     const cartItem = await this.cartRepository.findOne({ where: { id: cartItemId } });
     if (!cartItem) {

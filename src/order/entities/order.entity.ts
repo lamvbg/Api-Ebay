@@ -48,6 +48,9 @@ export class OrderEntity {
   @Column({ type: 'enum', enum: DeliveryStatus, nullable: true, default:DeliveryStatus.PENDING })
   deliveryStatus: DeliveryStatus;
 
+  @Column({ nullable: true})
+  depositAmount: string;
+
   @Column({ nullable: true })
   paymentImg: string;
 }
