@@ -20,10 +20,10 @@ export class CartController {
     return await this.cartService.getAllCartItemsByUserId(userId);
   }
 
-  @Patch('update/:cartItemId')
+  @Patch('update')
   @UseGuards(JAuthGuard)
-  async updateCartItem(@Param('cartItemId') cartItemId: number, @Body() updatedData: Partial<CartEntity>): Promise<CartEntity> {
-    return await this.cartService.updateCartItem(cartItemId, updatedData);
+  async updateMultipleCartItems(@Body() updates: { cartItemId: number, updatedData: Partial<CartEntity> }[]): Promise<CartEntity[]> {
+    return await this.cartService.updateCartItems(updates);
   }
 
   @Delete('delete/:cartItemId')

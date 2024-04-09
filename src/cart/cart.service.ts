@@ -45,26 +45,35 @@ export class CartService {
     return await this.cartRepository.find({ where: { user: { id: userId } }, relations: ['product'] });
   }
 
-  async updateCartItem(cartItemId: number, updatedData: Partial<CartEntity>): Promise<CartEntity> {
-    const cartItem = await this.cartRepository.findOne({ where: { id: cartItemId } });
-    if (!cartItem) {
-        throw new NotFoundException(`Cart item with ID ${cartItemId} not found.`);
-    }
+  async updateCartItems(updates: { cartItemId: number, updatedData: Partial<CartEntity> }[]): Promise<CartEntity[]> {
+    const updatedCartItems: CartEntity[] = [];
 
+    for (const update of updates) {
+        const { cartItemId, updatedData } = update;
+        const cartItem = await this.cartRepository.findOne({ where: { id: cartItemId } });
 
-    if (updatedData.product) {
-        const productId = updatedData.product.id;
-        const product = await this.productRepository.findOne({ where: { id: productId } });
-        if (!product) {
-            throw new NotFoundException(`Product with ID ${productId} not found.`);
+        if (!cartItem) {
+            throw new NotFoundException(`Cart item with ID ${cartItemId} not found.`);
         }
-        cartItem.product = product;
+
+        if (updatedData.product) {
+            const productId = updatedData.product.id;
+            const product = await this.productRepository.findOne({ where: { id: productId } });
+            if (!product) {
+                throw new NotFoundException(`Product with ID ${productId} not found.`);
+            }
+            cartItem.product = product;
+        }
+
+        Object.assign(cartItem, updatedData);
+
+        const updatedCartItem = await this.cartRepository.save(cartItem);
+        updatedCartItems.push(updatedCartItem);
     }
 
-    Object.assign(cartItem, updatedData);
-
-    return await this.cartRepository.save(cartItem);
+    return updatedCartItems;
 }
+
 
 
 
