@@ -1,11 +1,13 @@
 // order/order.controller.ts
 
-import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, NotFoundException, UnauthorizedException, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, NotFoundException, UnauthorizedException, Req, Query } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { OrderEntity } from './entities';
 import { OrderDto } from './dto/order.dto';
 import { RolesGuard } from 'src/auth/utils/role.middleware';
 import { JAuthGuard } from 'src/auth/utils/authMiddleWare';
+import { QueryDto } from './dto/queryDto.dto';
+import { PaginatedOrdersResultDto } from './dto/PaginationOrdersResultDto.dto';
 
 @Controller('order')
 export class OrderController {
@@ -13,8 +15,8 @@ export class OrderController {
 
   @Get()
   @UseGuards(JAuthGuard, RolesGuard)
-  async findAll(): Promise<OrderEntity[]> {
-    return this.orderService.findAll();
+  async findAll(@Query() query: QueryDto): Promise<PaginatedOrdersResultDto> {
+    return this.orderService.findAll(query);
   }
 
   @Get(':id')

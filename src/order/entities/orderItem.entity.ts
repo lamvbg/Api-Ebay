@@ -8,8 +8,8 @@ export class OrderItemEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(type => UserEntity)
-    user: UserEntity;
+    // @ManyToOne(type => UserEntity)
+    // user: UserEntity;
 
     @ManyToOne(type => ProductEntity)
     product: ProductEntity;

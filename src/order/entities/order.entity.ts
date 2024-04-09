@@ -3,6 +3,19 @@ import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'ty
 import { UserEntity } from '../../user/entities';
 import { OrderItemEntity } from './orderItem.entity';
 
+export enum PaymentStatus {
+  NOT_PAID = 'not_paid',
+  PARTIALLY_PAID = 'partially_paid',
+  FULLY_PAID = 'fully_paid'
+}
+
+export enum DeliveryStatus {
+  PENDING = 'pending',
+  IN_TRANSIT = 'in_transit',
+  DELIVERED = 'delivered',
+  FAILED = 'failed'
+}
+
 @Entity({ name: 'Order' })
 export class OrderEntity {
   @PrimaryGeneratedColumn()
@@ -28,4 +41,10 @@ export class OrderEntity {
 
   @Column()
   phone: string;
+
+  @Column({ type: 'enum', enum: PaymentStatus, default: PaymentStatus.NOT_PAID })
+  paymentStatus: PaymentStatus;
+
+  @Column({ type: 'enum', enum: DeliveryStatus, nullable: true, default:DeliveryStatus.PENDING })
+  deliveryStatus: DeliveryStatus;
 }
