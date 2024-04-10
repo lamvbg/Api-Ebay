@@ -24,8 +24,8 @@ export class OrderController {
 
   @Get(':id')
   @UseGuards(JAuthGuard)
-  async findOne(@Param('id') id: string): Promise<OrderEntity> {
-    return this.orderService.findOne(+id);
+  async findOne(@Param('id') id: number): Promise<OrderEntity> {
+    return this.orderService.findOne(id);
   }
 
   @Get('user/:userId')
