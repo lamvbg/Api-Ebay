@@ -23,7 +23,7 @@ export class OrderController {
   }
 
   @Get(':id')
-  @UseGuards(JAuthGuard, RolesGuard)
+  @UseGuards(JAuthGuard)
   async findOne(@Param('id') id: string): Promise<OrderEntity> {
     return this.orderService.findOne(+id);
   }
