@@ -69,7 +69,7 @@ export class OrderController {
   }
 
   @Put(':id')
-  @UseGuards(JAuthGuard, RolesGuard)
+  @UseGuards(JAuthGuard)
   @UseInterceptors(FileInterceptor('paymentImg'))
   async update(
     @Param('id') id: string, 
