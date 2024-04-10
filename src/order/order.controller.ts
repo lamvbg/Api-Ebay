@@ -69,7 +69,7 @@ export class OrderController {
   }
 
   @Put(':id')
-  @UseGuards(JAuthGuard)
+  @UseGuards(JAuthGuard, RolesGuard)
   @UseInterceptors(FileInterceptor('paymentImg'))
   async update(
     @Param('id') id: string, 
@@ -79,6 +79,17 @@ export class OrderController {
     return this.orderService.update(orderDto, +id, paymentImg ); 
   }
 
+  @Put('payment/:id')
+  @UseGuards(JAuthGuard)
+  @UseInterceptors(FileInterceptor('paymentImg'))
+  async updatePaymentImg(
+    @Param('id') id: string, 
+    @UploadedFile() paymentImg?:Multer.File,
+  ): Promise<OrderEntity> {
+
+    return this.orderService.updatePaymentImg(+id, paymentImg); 
+  }
+  
   @Delete(':id')
   @UseGuards(JAuthGuard, RolesGuard)
   async remove(@Param('id') id: string): Promise<void> {

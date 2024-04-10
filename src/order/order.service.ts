@@ -1,6 +1,6 @@
 // order/order.service.ts
 
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { OrderEntity } from './entities';
@@ -216,7 +216,27 @@ export class OrderService {
     return order;
   }
 
-
+  async updatePaymentImg(id: number, paymentImage: Multer.File): Promise<OrderEntity> {
+    const order = await this.orderRepository.findOne({
+      where: { id },
+      relations: ["user", "orderItems", "orderItems.product"]
+    });
+  
+    if (!order) {
+      throw new NotFoundException(`Order with ID ${id} not found.`);
+    }
+  
+    if (paymentImage) {
+      const paymentUrl = await this.uploadAndReturnUrl(paymentImage);
+      order.paymentImg = paymentUrl;
+      await this.orderRepository.save(order);
+    } else {
+      throw new BadRequestException('Payment image is required for updating.');
+    }
+  
+    return order;
+  }
+  
 
   async remove(id: number): Promise<void> {
     await this.orderRepository.delete(id);
