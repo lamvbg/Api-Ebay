@@ -53,11 +53,11 @@ export class OrderService {
       .take(limit);
 
     if (phone) {
-      queryBuilder.andWhere('order.phone = :phone', { phone });
+      queryBuilder.andWhere('order.phone ILIKE :phone', { phone: `%${phone}%` });
     }
 
     if (userName) {
-      queryBuilder.andWhere('user.displayName = :userName', { userName });
+      queryBuilder.andWhere('user.displayName ILIKE :userName', { userName: `%${userName}%` });
     }
 
     if (createdAtFrom) {

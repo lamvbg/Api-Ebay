@@ -46,10 +46,10 @@ export class EbayService {
         const priceTreatment = itemSummary.marketingPrice ? parseFloat(itemSummary.marketingPrice.priceTreatment) : 0;
 
         const existingProduct = await this.productRepository.findOne({ where: { id: itemId } });
-        if (existingProduct && existingProduct.isUpdated) {
-          console.log(`Product with ID ${itemId} has been updated recently. Skipping price update.`);
-          continue;
-        }
+        // if (existingProduct && existingProduct.isUpdated) {
+        //   console.log(`Product with ID ${itemId} has been updated recently. Skipping price update.`);
+        //   continue;
+        // }
 
         if (!existingProduct) {
           const newProduct = new ProductEntity();
@@ -321,8 +321,9 @@ export class EbayService {
     }
 
     if (condition) {
-      queryBuilder.andWhere("product.condition = :condition", { condition });
+      queryBuilder.andWhere("product.condition ILIKE :condition", { condition: `%${condition}%` });
     }
+    
 
     const [data, totalCount] = await Promise.all([
       queryBuilder
@@ -356,9 +357,9 @@ export class EbayService {
         throw new NotFoundException(`Product with ID ${id} not found.`);
       }
 
-      if (productData.isUpdated === false) {
-        existingProduct.isUpdated = false;
-      }
+      // if (productData.isUpdated === false) {
+      //   existingProduct.isUpdated = false;
+      // }
 
       if (productData.marketingPrice && productData.marketingPrice.discountPercentage) {
         const originalPriceValue = parseFloat(existingProduct.marketingPrice.originalPrice.value);

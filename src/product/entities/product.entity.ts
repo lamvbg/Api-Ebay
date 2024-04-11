@@ -2,6 +2,14 @@ import { Category } from 'src/Category/entities';
 import { OrderItemEntity } from 'src/order/entities/orderItem.entity';
 import { Column, Entity, ManyToOne, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
 
+export enum ConditionEnum {
+  PRE_ORDER = 'Pre Order',
+  NEW = 'New',
+  OPEN_BOX = 'Open Box',
+  Refurbished= 'Refurbished',
+  Used = 'Used'
+}
+
 @Entity({ name: 'Product' })
 export class ProductEntity {
   @PrimaryColumn()
@@ -24,6 +32,9 @@ export class ProductEntity {
 
   @Column({ nullable: true })
   condition: string;
+
+  @Column({ type: 'enum', enum: ConditionEnum, default: ConditionEnum.PRE_ORDER })
+  conditionOrder : ConditionEnum;
 
   @Column({ type: 'json', nullable: true })
   seller: string[];
@@ -54,6 +65,6 @@ export class ProductEntity {
   @OneToMany(() => OrderItemEntity, order => order.product)
   orders: OrderItemEntity[];
 
-  @Column({ default: false })
-  isUpdated: boolean;
+  // @Column({ default: false })
+  // isUpdated: boolean;
 }
