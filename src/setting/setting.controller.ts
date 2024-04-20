@@ -5,14 +5,24 @@ import { JAuthGuard } from 'src/auth/utils/authMiddleWare';
 import { RolesGuard } from 'src/auth/utils/role.middleware';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
+import { SettingAdminDto, SettingUserDto } from './dto/UserSetting.dto';
+import { plainToClass } from 'class-transformer';
 
 @Controller('setting')
 export class SettingController {
   constructor(private readonly settingService: SettingService) { }
 
+  @Get('admin')
+  @UseGuards(JAuthGuard, RolesGuard)
+  async findOneAdmin(): Promise<SettingAdminDto> {
+    const setting = await this.settingService.findOne();
+    return plainToClass(SettingAdminDto, setting);
+  }
+  
   @Get()
-  async findOne(): Promise<Setting> {
-    return this.settingService.findOne();
+  async findOneUser(): Promise<SettingUserDto> {
+    const setting = await this.settingService.findOne();
+    return plainToClass(SettingUserDto, setting);
   }
 
   @Post()

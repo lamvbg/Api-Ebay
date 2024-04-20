@@ -21,6 +21,7 @@ import { MySchedulerService } from 'src/product/utils/my-scheduler.service';
 import { Category } from 'src/Category/entities';
 import { OrderItemEntity } from './entities/orderItem.entity';
 import { CartEntity } from 'src/cart/entities';
+import { CartService } from 'src/cart/cart.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([OrderEntity, ProductEntity, UserEntity, Setting, Category, OrderItemEntity, CartEntity]),JwtModule.register({
@@ -28,6 +29,6 @@ import { CartEntity } from 'src/cart/entities';
     signOptions: { expiresIn: '24h' },
   })],
   controllers: [OrderController],
-  providers: [OrderService, JwtStrategy, AuthService, CloudinaryService, SettingService, EbayService, EbayAuthService, GoogleTranslateService, CategoryService, MySchedulerService],
+  providers: [OrderService, JwtStrategy, AuthService, CloudinaryService, SettingService, EbayService, EbayAuthService, GoogleTranslateService, CategoryService, MySchedulerService, CartService],
 })
 export class OrderModule {}

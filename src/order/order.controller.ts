@@ -73,25 +73,12 @@ export class OrderController {
     }
   }
 
-  @Put('discountCode/:id')
-  @UseGuards(JAuthGuard)
+  @Post('discountCode')
   async addDiscountCode(
     @Param('id') orderId: number,
     @Body('discountCode') discountCode: string,
-  ): Promise<OrderEntity> {
-    if (!discountCode) {
-      return;
-    }
-  
-    const setting = await this.settingService.findOne();
-  
-    if (setting && setting.discount && discountCode === setting.discount.code) {
-      const totalPrice = await this.orderService.calculateTotalPrice(orderId, discountCode, setting);
-      const order = await this.orderService.updateOrderWithDiscount(orderId, discountCode, totalPrice);
-      return order;
-    } else {
-      throw new NotFoundException('Invalid discount code');
-    }
+  ): Promise<{ code: string, value: number }> {
+    return this.orderService.getDiscountByCode(discountCode);
   }
 
   @Put(':id')

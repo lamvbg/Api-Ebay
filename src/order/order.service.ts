@@ -15,6 +15,7 @@ import { Multer } from 'multer';
 import { CloudinaryService } from 'src/setting/utils/file.service';
 import { Setting } from 'src/setting/entities';
 import { CartEntity } from 'src/cart/entities';
+import { CartService } from 'src/cart/cart.service';
 
 @Injectable()
 export class OrderService {
@@ -33,6 +34,7 @@ export class OrderService {
     private readonly settingRepository: Repository<Setting>,
     @InjectRepository(CartEntity)
     private readonly cartRepository: Repository<CartEntity>,
+    private cartService: CartService,
   ) { }
 
   async findAll(query: QueryDto): Promise<PaginatedOrdersResultDto> {
@@ -112,7 +114,6 @@ export class OrderService {
     return orders || [];
   }
 
-
   async create(orderDto: OrderDto, id: number): Promise<OrderEntity> {
     const { products, totalPrice, createdAt, userId, shippingFee, address, phone, depositAmount } = orderDto;
 
@@ -121,15 +122,10 @@ export class OrderService {
       throw new NotFoundException(`User with ID ${userId} not found.`);
     }
 
-    const cartItems = user.cartItems;
-
-    console.log(cartItems)
-    
-    if (!cartItems || cartItems.length === 0) {
-      throw new NotFoundException(`Cart is empty for user with ID ${userId}.`);
+    for (const productData of products) {
+      const productId = productData.productId;
+      await this.cartService.removeCartItemsByProductId(user, productId);
     }
-    
-    await this.cartRepository.remove(user.cartItems);
 
     if (user.address === null) {
       user.address = address;
@@ -257,34 +253,17 @@ export class OrderService {
     return order;
   }
 
-  async calculateTotalPrice(orderId: number, discountCode: string, setting: Setting): Promise<number> {
-    const order = await this.orderRepository.findOne({
-      where: { id: orderId },
-      relations: ["user", "orderItems", "orderItems.product"]
-    });
-  
-    if (!order) {
-      throw new NotFoundException(`Order with ID ${orderId} not found.`);
+  async getDiscountByCode(discountCode: string): Promise<{ code: string, value: number }> {
+    const setting = await this.settingRepository.findOne({ where: {} });
+    if (setting && setting.discount) {
+      const discount = setting.discount.find(discount => discount.code === discountCode);
+      if (discount) {
+        return discount;
+      }
     }
-  
-    let totalPrice = order.totalPrice;
-  
-    if (discountCode && setting && setting.discount && discountCode === setting.discount.code) {
-      const discountValue = setting.discount.value;
-      totalPrice -= (totalPrice * discountValue) / 100;
-    }
-  
-    return totalPrice;
+    throw new NotFoundException('Invalid discount code');
   }
-
-  async updateOrderWithDiscount(orderId: number, discountCode: string, totalPrice: number): Promise<OrderEntity> {
-    await this.orderRepository.update(orderId, { discountCode, totalPrice });
-
-    const updatedOrder = await this.orderRepository.findOne({where: { id: orderId }});
-    return updatedOrder;
-  }
-
-
+  
   async remove(id: number): Promise<void> {
     await this.orderRepository.delete(id);
   }

@@ -30,5 +30,5 @@ export class Setting {
     bankInfoName: string;
 
     @Column({ nullable: true, type: 'json' })
-    discount: { code: string; value: number }
+    discount: { code: string; value: number }[];
 }
