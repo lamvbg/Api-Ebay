@@ -10,7 +10,7 @@ export class Setting {
 
     @Column({ type: 'jsonb', nullable: true, default: {} })
     slide: { slideImg: string }[];
-
+    
     @Column({ nullable: true })
     bannerBot: string;
 
@@ -19,15 +19,18 @@ export class Setting {
 
     @Column({ nullable: true })
     weightBasedPrice: number;
-
+    
     @Column({ type: 'jsonb', nullable: true, default: {} })
     warrantyFees: { duration: number; fee: number }[];
 
     @Column({ nullable: true })
     bankUrl: string;
-
+    
     @Column({ nullable: true })
     bankInfoName: string;
+
+    @Column({ nullable: true })
+    depositAmount: number;
 
     @Column({ nullable: true, type: 'json' })
     discount: { code: string; value: number }[];

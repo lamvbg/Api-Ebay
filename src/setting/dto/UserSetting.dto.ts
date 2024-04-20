@@ -30,6 +30,9 @@ export class SettingAdminDto {
 
   @Expose()
   discount: { code: string; value: number };
+
+  @Expose()
+  depositAmount: number;
 }
 
 export class SettingUserDto {
@@ -62,4 +65,7 @@ export class SettingUserDto {
 
   @Exclude()
   discount: { code: string; value: number };
+
+  @Expose()
+  depositAmount: number;
 }
