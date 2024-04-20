@@ -20,14 +20,24 @@ export class CartService {
 
   async addToCart(addToCartDto: AddToCartDto): Promise<CartEntity> {
     const { userId, productId, quantity, warrantyFee } = addToCartDto;
-    let cartItem = await this.cartRepository.findOne({ where: { user: { id: userId }, product: { id: productId } } });
-  
     const product = await this.productRepository.findOne({ where: { id: productId } });
+    
     if (!product) {
       throw new NotFoundException(`Product with ID ${productId} not found.`);
     }
   
-    if (!cartItem) {
+    // Lấy tất cả các mục trong giỏ hàng của người dùng có cùng productId
+    const cartItems = await this.cartRepository.find({ where: { user: { id: userId }, product: { id: productId } } });
+  
+    // Kiểm tra xem có mục nào có warrantyFee giống với warrantyFee từ addToCartDto không
+    const existingCartItem = cartItems.find(item => item.warrantyFee === warrantyFee);
+  
+    if (existingCartItem) {
+      // Nếu có, chỉ tăng số lượng
+      existingCartItem.quantity += quantity || 1;
+      return await this.cartRepository.save(existingCartItem);
+    } else {
+      // Nếu không, tạo một mục mới
       const newCartItem = this.cartRepository.create({
         user: { id: userId },
         product: { id: productId },
@@ -35,11 +45,10 @@ export class CartService {
         warrantyFee
       });
       return await this.cartRepository.save(newCartItem);
-    } else {
-      cartItem.quantity += quantity || 1;
-      return await this.cartRepository.save(cartItem);
     }
   }
+  
+  
 
   async getAllCartItemsByUserId(userId: string): Promise<CartEntity[]> {
     return await this.cartRepository.find({ where: { user: { id: userId } }, relations: ['product'] });
