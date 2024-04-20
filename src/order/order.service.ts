@@ -13,6 +13,8 @@ import { QueryDto } from './dto/queryDto.dto';
 import { PaginatedOrdersResultDto } from './dto/PaginationOrdersResultDto.dto';
 import { Multer } from 'multer';
 import { CloudinaryService } from 'src/setting/utils/file.service';
+import { Setting } from 'src/setting/entities';
+import { CartEntity } from 'src/cart/entities';
 
 @Injectable()
 export class OrderService {
@@ -27,6 +29,10 @@ export class OrderService {
     private readonly userRepository: Repository<UserEntity>,
     @InjectRepository(OrderItemEntity)
     private readonly orderItemRepository: Repository<OrderItemEntity>,
+    @InjectRepository(Setting)
+    private readonly settingRepository: Repository<Setting>,
+    @InjectRepository(CartEntity)
+    private readonly cartRepository: Repository<CartEntity>,
   ) { }
 
   async findAll(query: QueryDto): Promise<PaginatedOrdersResultDto> {
@@ -110,10 +116,20 @@ export class OrderService {
   async create(orderDto: OrderDto, id: number): Promise<OrderEntity> {
     const { products, totalPrice, createdAt, userId, shippingFee, address, phone, depositAmount } = orderDto;
 
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+    const user = await this.userRepository.findOne({ where: { id: userId }, relations: ["cartItems"] });
     if (!user) {
       throw new NotFoundException(`User with ID ${userId} not found.`);
     }
+
+    const cartItems = user.cartItems;
+
+    console.log(cartItems)
+    
+    if (!cartItems || cartItems.length === 0) {
+      throw new NotFoundException(`Cart is empty for user with ID ${userId}.`);
+    }
+    
+    await this.cartRepository.remove(user.cartItems);
 
     if (user.address === null) {
       user.address = address;
@@ -211,6 +227,10 @@ export class OrderService {
       order.depositAmount = orderDto.depositAmount;
     }
 
+    if (orderDto.discountCode) {
+      order.discountCode = orderDto.discountCode;
+    }
+
     await this.orderRepository.save(order);
 
     return order;
@@ -221,11 +241,11 @@ export class OrderService {
       where: { id },
       relations: ["user", "orderItems", "orderItems.product"]
     });
-  
+
     if (!order) {
       throw new NotFoundException(`Order with ID ${id} not found.`);
     }
-  
+
     if (paymentImage) {
       const paymentUrl = await this.uploadAndReturnUrl(paymentImage);
       order.paymentImg = paymentUrl;
@@ -233,10 +253,37 @@ export class OrderService {
     } else {
       throw new BadRequestException('Payment image is required for updating.');
     }
-  
+
     return order;
   }
+
+  async calculateTotalPrice(orderId: number, discountCode: string, setting: Setting): Promise<number> {
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId },
+      relations: ["user", "orderItems", "orderItems.product"]
+    });
   
+    if (!order) {
+      throw new NotFoundException(`Order with ID ${orderId} not found.`);
+    }
+  
+    let totalPrice = order.totalPrice;
+  
+    if (discountCode && setting && setting.discount && discountCode === setting.discount.code) {
+      const discountValue = setting.discount.value;
+      totalPrice -= (totalPrice * discountValue) / 100;
+    }
+  
+    return totalPrice;
+  }
+
+  async updateOrderWithDiscount(orderId: number, discountCode: string, totalPrice: number): Promise<OrderEntity> {
+    await this.orderRepository.update(orderId, { discountCode, totalPrice });
+
+    const updatedOrder = await this.orderRepository.findOne({where: { id: orderId }});
+    return updatedOrder;
+  }
+
 
   async remove(id: number): Promise<void> {
     await this.orderRepository.delete(id);

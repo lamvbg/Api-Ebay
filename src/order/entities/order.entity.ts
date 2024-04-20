@@ -53,4 +53,7 @@ export class OrderEntity {
 
   @Column({ nullable: true })
   paymentImg: string;
+
+  @Column({ nullable: true})
+  discountCode: string;
 }

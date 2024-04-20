@@ -92,8 +92,6 @@ export class SettingService {
     return updatedSettingResult;
   }
   
-  
-  
   async getRatioPrice(): Promise<number | null> {
     const setting = await this.settingRepository.findOne({ where: {} });
     return setting ? setting.ratioPrice : null;

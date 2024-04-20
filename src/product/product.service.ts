@@ -285,7 +285,7 @@ export class EbayService {
   }
 
   async findAll(paginationQuery: PaginationQueryDto): Promise<PaginatedProductsResultDto> {
-    let { page, limit, minPrice, maxPrice, category, marketingPrice, condition } = paginationQuery;
+    let { page, limit, minPrice, maxPrice, category, marketingPrice, condition, conditionOrder } = paginationQuery;
 
     page = Number(page);
     limit = Number(limit);
@@ -323,6 +323,12 @@ export class EbayService {
     if (condition) {
       queryBuilder.andWhere("product.condition ILIKE :condition", { condition: `%${condition}%` });
     }
+
+    if (conditionOrder) {
+      queryBuilder.andWhere("product.conditionOrder = :conditionOrder", { conditionOrder: conditionOrder });
+    }
+    
+    
     
 
     const [data, totalCount] = await Promise.all([

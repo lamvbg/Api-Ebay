@@ -14,4 +14,5 @@ export class OrderDto {
     deliveryStatus: DeliveryStatus;
     paymentImg: string;
     depositAmount: string;
+    discountCode: string;
 }

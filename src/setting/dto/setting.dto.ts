@@ -7,4 +7,6 @@ export class UpdateSettingDto {
     weightBasedPrice?: number;
     bankUrl?: string;
     bankInfoName: string;
+    depositAmount: number;
+    discount?: { code: string; value: number };
 }

@@ -10,11 +10,16 @@ import { QueryDto } from './dto/queryDto.dto';
 import { PaginatedOrdersResultDto } from './dto/PaginationOrdersResultDto.dto';
 import { Multer } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Setting } from 'src/setting/entities';
+import { SettingService } from 'src/setting/setting.service';
 
 
 @Controller('order')
 export class OrderController {
-  constructor(private readonly orderService: OrderService) { }
+  constructor(
+    private readonly orderService: OrderService,
+    private readonly settingService: SettingService
+  ) { }
 
   @Get()
   @UseGuards(JAuthGuard, RolesGuard)
@@ -65,6 +70,27 @@ export class OrderController {
         throw error;
       }
       throw new Error('Internal Server Error');
+    }
+  }
+
+  @Put('discountCode/:id')
+  @UseGuards(JAuthGuard)
+  async addDiscountCode(
+    @Param('id') orderId: number,
+    @Body('discountCode') discountCode: string,
+  ): Promise<OrderEntity> {
+    if (!discountCode) {
+      return;
+    }
+  
+    const setting = await this.settingService.findOne();
+  
+    if (setting && setting.discount && discountCode === setting.discount.code) {
+      const totalPrice = await this.orderService.calculateTotalPrice(orderId, discountCode, setting);
+      const order = await this.orderService.updateOrderWithDiscount(orderId, discountCode, totalPrice);
+      return order;
+    } else {
+      throw new NotFoundException('Invalid discount code');
     }
   }
 

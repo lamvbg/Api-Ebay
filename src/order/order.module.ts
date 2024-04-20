@@ -20,9 +20,10 @@ import { CategoryService } from 'src/Category/category.service';
 import { MySchedulerService } from 'src/product/utils/my-scheduler.service';
 import { Category } from 'src/Category/entities';
 import { OrderItemEntity } from './entities/orderItem.entity';
+import { CartEntity } from 'src/cart/entities';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([OrderEntity, ProductEntity, UserEntity, Setting, Category, OrderItemEntity]),JwtModule.register({
+  imports: [TypeOrmModule.forFeature([OrderEntity, ProductEntity, UserEntity, Setting, Category, OrderItemEntity, CartEntity]),JwtModule.register({
     secret: 'asiodasjoddjdoasddasoidjasiodasdjaiodd',
     signOptions: { expiresIn: '24h' },
   })],

@@ -81,4 +81,9 @@ export class CartService {
     }
     await this.cartRepository.remove(cartItem);
   }
+
+  async removeCartItemsByProductId(user: UserEntity, productId: string): Promise<void> {
+    const cartItemsToRemove = user.cartItems.filter(cartItem => cartItem.product.id === productId);
+    await this.cartRepository.remove(cartItemsToRemove);
+  }
 }
