@@ -32,6 +32,4 @@ export class Setting {
     @Column({ nullable: true })
     depositAmount: number;
 
-    @Column({ nullable: true, type: 'json' })
-    discount: { code: string; value: number }[];
 }

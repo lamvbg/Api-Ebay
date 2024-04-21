@@ -77,7 +77,7 @@ export class OrderController {
   async addDiscountCode(
     @Param('id') orderId: number,
     @Body('discountCode') discountCode: string,
-  ): Promise<{ code: string, value: number }> {
+  ): Promise<{  }> {
     return this.orderService.getDiscountByCode(discountCode);
   }
 

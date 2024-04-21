@@ -22,13 +22,15 @@ import { Category } from 'src/Category/entities';
 import { OrderItemEntity } from './entities/orderItem.entity';
 import { CartEntity } from 'src/cart/entities';
 import { CartService } from 'src/cart/cart.service';
+import { DiscountService } from 'src/discount/discount.service';
+import { DiscountEntity } from 'src/discount/entities';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([OrderEntity, ProductEntity, UserEntity, Setting, Category, OrderItemEntity, CartEntity]),JwtModule.register({
+  imports: [TypeOrmModule.forFeature([OrderEntity, ProductEntity, UserEntity, Category, OrderItemEntity, CartEntity, Setting, DiscountEntity]),JwtModule.register({
     secret: 'asiodasjoddjdoasddasoidjasiodasdjaiodd',
     signOptions: { expiresIn: '24h' },
   })],
   controllers: [OrderController],
-  providers: [OrderService, JwtStrategy, AuthService, CloudinaryService, SettingService, EbayService, EbayAuthService, GoogleTranslateService, CategoryService, MySchedulerService, CartService],
+  providers: [OrderService, JwtStrategy, AuthService, CloudinaryService, SettingService, EbayService, EbayAuthService, GoogleTranslateService, CategoryService, MySchedulerService, CartService, DiscountService],
 })
 export class OrderModule {}

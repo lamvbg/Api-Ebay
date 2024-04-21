@@ -16,6 +16,8 @@ import { CloudinaryService } from 'src/setting/utils/file.service';
 import { Setting } from 'src/setting/entities';
 import { CartEntity } from 'src/cart/entities';
 import { CartService } from 'src/cart/cart.service';
+import { DiscountEntity } from 'src/discount/entities';
+import { DiscountService } from 'src/discount/discount.service';
 
 @Injectable()
 export class OrderService {
@@ -30,11 +32,9 @@ export class OrderService {
     private readonly userRepository: Repository<UserEntity>,
     @InjectRepository(OrderItemEntity)
     private readonly orderItemRepository: Repository<OrderItemEntity>,
-    @InjectRepository(Setting)
-    private readonly settingRepository: Repository<Setting>,
-    @InjectRepository(CartEntity)
-    private readonly cartRepository: Repository<CartEntity>,
     private cartService: CartService,
+    private discountService: DiscountService,
+
   ) { }
 
   async findAll(query: QueryDto): Promise<PaginatedOrdersResultDto> {
@@ -253,15 +253,15 @@ export class OrderService {
     return order;
   }
 
-  async getDiscountByCode(discountCode: string): Promise<{ code: string, value: number }> {
-    const setting = await this.settingRepository.findOne({ where: {} });
-    if (setting && setting.discount) {
-      const discount = setting.discount.find(discount => discount.code === discountCode);
-      if (discount) {
-        return discount;
-      }
+  async getDiscountByCode(discountCode: string): Promise<{ }> {
+    const discounts = await this.discountService.findAll();
+    const discount = discounts.find(discount => discount.code === discountCode);
+
+    if (discount) {
+      return {discount};
+    } else {
+      return {};
     }
-    throw new NotFoundException('Invalid discount code');
   }
   
   async remove(id: number): Promise<void> {

@@ -8,5 +8,4 @@ export class UpdateSettingDto {
     bankUrl?: string;
     bankInfoName: string;
     depositAmount: number;
-    discount?: { code: string; value: number };
 }
