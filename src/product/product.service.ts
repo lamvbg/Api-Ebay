@@ -8,14 +8,14 @@ import { parseStringPromise, Builder } from 'xml2js'; // Import parseStringPromi
 import { PaginationQueryDto } from './dto/PaginationQueryDto.dto';
 import { PaginatedProductsResultDto } from './dto/PaginatedProductsResultDto.dto';
 import { GoogleTranslateService } from './translation.service';
-import { CategoryService } from 'src/Category/category.service';
-import { SettingService } from 'src/setting/setting.service';
-import { Setting } from 'src/setting/entities';
+import { CategoryService } from '../Category/category.service';
+import { SettingService } from '../setting/setting.service';
+import { Setting } from '../setting/entities';
 import { MailService } from './sendmail.service';
 import * as fs from 'fs';
 import { promisify } from 'util';
 import * as handlebars from 'handlebars';
-import { CartEntity } from 'src/cart/entities';
+import { CartEntity } from '../cart/entities';
 
 @Injectable()
 export class EbayService {

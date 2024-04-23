@@ -1,8 +1,8 @@
 import { Controller, Get, Post, Body, Put, Delete, UseGuards, UseInterceptors, UploadedFiles } from '@nestjs/common';
 import { SettingService } from './setting.service';
 import { Setting } from './entities';
-import { JAuthGuard } from 'src/auth/utils/authMiddleWare';
-import { RolesGuard } from 'src/auth/utils/role.middleware';
+import { JAuthGuard } from '../auth/utils/authMiddleWare';
+import { RolesGuard } from '../auth/utils/role.middleware';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
 import { SettingAdminDto, SettingUserDto } from './dto/UserSetting.dto';

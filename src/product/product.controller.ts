@@ -5,8 +5,8 @@ import { EbayService } from './product.service';
 import { ProductEntity } from './entities';
 import { PaginationQueryDto } from './dto/PaginationQueryDto.dto';
 import { PaginatedProductsResultDto } from './dto/PaginatedProductsResultDto.dto';
-import { JAuthGuard } from 'src/auth/utils/authMiddleWare';
-import { RolesGuard } from 'src/auth/utils/role.middleware';
+import { JAuthGuard } from '../auth/utils/authMiddleWare';
+import { RolesGuard } from '../auth/utils/role.middleware';
 
 @Controller('ebay')
 export class EbayController {

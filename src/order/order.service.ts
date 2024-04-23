@@ -5,19 +5,19 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { OrderEntity } from './entities';
 import { OrderDto } from './dto/order.dto';
-import { ProductEntity } from 'src/product/entities';
-import { UserEntity } from 'src/user/entities';
-import { SettingService } from 'src/setting/setting.service';
+import { ProductEntity } from '../product/entities';
+import { UserEntity } from '../user/entities';
+import { SettingService } from '../setting/setting.service';
 import { OrderItemEntity } from './entities/orderItem.entity';
 import { QueryDto } from './dto/queryDto.dto';
 import { PaginatedOrdersResultDto } from './dto/PaginationOrdersResultDto.dto';
 import { Multer } from 'multer';
-import { CloudinaryService } from 'src/setting/utils/file.service';
-import { Setting } from 'src/setting/entities';
-import { CartEntity } from 'src/cart/entities';
-import { CartService } from 'src/cart/cart.service';
-import { DiscountEntity } from 'src/discount/entities';
-import { DiscountService } from 'src/discount/discount.service';
+import { CloudinaryService } from '../setting/utils/file.service';
+import { Setting } from '../setting/entities';
+import { CartEntity } from '../cart/entities';
+import { CartService } from '../cart/cart.service';
+import { DiscountEntity } from '../discount/entities';
+import { DiscountService } from '../discount/discount.service';
 
 @Injectable()
 export class OrderService {

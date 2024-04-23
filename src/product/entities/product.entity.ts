@@ -1,5 +1,5 @@
-import { Category } from 'src/Category/entities';
-import { OrderItemEntity } from 'src/order/entities/orderItem.entity';
+import { Category } from '../../Category/entities';
+import { OrderItemEntity } from '../../order/entities/orderItem.entity';
 import { Column, Entity, ManyToOne, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
 
 export enum ConditionEnum {

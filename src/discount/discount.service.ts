@@ -3,11 +3,11 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DiscountEntity } from './entities';
-import { MailService } from 'src/product/sendmail.service';
+import { MailService } from '../product/sendmail.service';
 import * as fs from 'fs';
 import { promisify } from 'util';
 import * as handlebars from 'handlebars';
-import { UserEntity } from 'src/user/entities';
+import { UserEntity } from '../user/entities';
 
 @Injectable()
 export class DiscountService {

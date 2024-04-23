@@ -2,7 +2,7 @@ import { Controller, Post, Body, Param, Get, Patch, Delete, UseGuards } from '@n
 import { CartService } from './cart.service';
 import { CartEntity } from './entities';
 import { AddToCartDto } from './dto/addToCart.dto'
-import { JAuthGuard } from 'src/auth/utils/authMiddleWare';
+import { JAuthGuard } from '../auth/utils/authMiddleWare';
 
 @Controller('cart')
 export class CartController {

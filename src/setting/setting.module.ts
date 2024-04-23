@@ -3,16 +3,16 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { SettingController } from './setting.controller';
 import { SettingService } from './setting.service';
 import { Setting } from './entities';
-import { ProductEntity } from 'src/product/entities';
-import { EbayService } from 'src/product/product.service';
-import { EbayAuthService } from 'src/product/utils/ebay-auth.service';
-import { GoogleTranslateService } from 'src/product/translation.service';
-import { CategoryService } from 'src/Category/category.service';
-import { Category } from 'src/Category/entities';
+import { ProductEntity } from '../product/entities';
+import { EbayService } from '../product/product.service';
+import { EbayAuthService } from '../product/utils/ebay-auth.service';
+import { GoogleTranslateService } from '../product/translation.service';
+import { CategoryService } from '../Category/category.service';
+import { Category } from '../Category/entities';
 import { JwtModule } from '@nestjs/jwt';
 import { CloudinaryService } from './utils/file.service';
-import { MailService } from 'src/product/sendmail.service';
-import { CartEntity } from 'src/cart/entities';
+import { MailService } from '../product/sendmail.service';
+import { CartEntity } from '../cart/entities';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Setting, ProductEntity, Category, CartEntity]),JwtModule.register({

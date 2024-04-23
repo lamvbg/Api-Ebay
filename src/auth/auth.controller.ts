@@ -6,7 +6,7 @@ import { AuthService } from './auth.service';
 import { RolesGuard } from './utils/role.middleware';
 import { GoogleStrategy } from './utils/google.strategy';
 import { UpdateUserDto } from './dto/user.dto';
-import { UserEntity } from 'src/user/entities';
+import { UserEntity } from '../user/entities';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
 

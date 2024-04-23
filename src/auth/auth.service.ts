@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { UserEntity } from 'src/user/entities';
+import { UserEntity } from '../user/entities';
 import { Profile as GoogleProfile } from 'passport-google-oauth20';
 import { Profile as FacebookProfile } from 'passport-facebook';
 

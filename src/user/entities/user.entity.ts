@@ -1,7 +1,7 @@
 import { BeforeInsert, Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid'; // Import UUID v4 generator
-import { CartEntity } from 'src/cart/entities';
-import { OrderEntity } from 'src/order/entities/order.entity';
+import { CartEntity } from '../../cart/entities';
+import { OrderEntity } from '../../order/entities/order.entity';
 
 export enum UserRole {
   ADMIN = 'admin',

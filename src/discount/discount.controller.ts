@@ -2,8 +2,8 @@
 import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards } from '@nestjs/common';
 import { DiscountService } from './discount.service';
 import { DiscountEntity } from './entities';
-import { JAuthGuard } from 'src/auth/utils/authMiddleWare';
-import { RolesGuard } from 'src/auth/utils/role.middleware';
+import { JAuthGuard } from '../auth/utils/authMiddleWare';
+import { RolesGuard } from '../auth/utils/role.middleware';
 
 @Controller('discount')
 @UseGuards(JAuthGuard, RolesGuard)

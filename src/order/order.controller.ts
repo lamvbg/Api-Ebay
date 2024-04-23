@@ -4,14 +4,14 @@ import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, NotFoundExc
 import { OrderService } from './order.service';
 import { OrderEntity } from './entities';
 import { OrderDto } from './dto/order.dto';
-import { RolesGuard } from 'src/auth/utils/role.middleware';
-import { JAuthGuard } from 'src/auth/utils/authMiddleWare';
+import { RolesGuard } from '../auth/utils/role.middleware';
+import { JAuthGuard } from '../auth/utils/authMiddleWare';
 import { QueryDto } from './dto/queryDto.dto';
 import { PaginatedOrdersResultDto } from './dto/PaginationOrdersResultDto.dto';
 import { Multer } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Setting } from 'src/setting/entities';
-import { SettingService } from 'src/setting/setting.service';
+import { Setting } from '../setting/entities';
+import { SettingService } from '../setting/setting.service';
 
 
 @Controller('order')

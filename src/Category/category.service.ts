@@ -4,8 +4,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Category } from './entities';
-import { GoogleTranslateService } from 'src/product/translation.service';
-import { ProductEntity } from 'src/product/entities';
+import { GoogleTranslateService } from '../product/translation.service';
+import { ProductEntity } from '../product/entities';
 
 @Injectable()
 export class CategoryService {

@@ -5,8 +5,8 @@ import { DiscountEntity } from './entities';
 import { DiscountService } from './discount.service';
 import { DiscountController } from './discount.controller';
 import { JwtModule } from '@nestjs/jwt';
-import { MailService } from 'src/product/sendmail.service';
-import { UserEntity } from 'src/user/entities';
+import { MailService } from '../product/sendmail.service';
+import { UserEntity } from '../user/entities';
 
 @Module({
   imports: [TypeOrmModule.forFeature([DiscountEntity, UserEntity]),JwtModule.register({

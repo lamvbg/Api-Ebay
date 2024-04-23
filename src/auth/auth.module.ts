@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserEntity } from 'src/user/entities';
+import { UserEntity } from '../user/entities';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { GoogleStrategy } from './utils/google.strategy';
@@ -8,7 +8,7 @@ import { FacebookStrategy } from './utils/facebook.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './utils/jwt.strategy';
 import { JAuthGuard } from './utils/authMiddleWare';
-import { CloudinaryService } from 'src/setting/utils/file.service';
+import { CloudinaryService } from '../setting/utils/file.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([UserEntity]),

@@ -1,6 +1,6 @@
 // category.entity.ts
 
-import { ProductEntity } from 'src/product/entities';
+import { ProductEntity } from '../../product/entities';
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 
 @Entity()
