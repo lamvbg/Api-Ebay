@@ -12,7 +12,7 @@ import { DiscountModule } from './discount/discount.module';
 @Module({
   imports: [
     AuthModule,
-    UserModule,
+    // UserModule,
     EbayModule,
     DatabaseModule,
     OrderModule,
