@@ -14,16 +14,18 @@ import { JwtModule } from '@nestjs/jwt';
 import { MySchedulerService } from './utils/my-scheduler.service';
 import { ScheduleModule } from '@nestjs/schedule';
 import { CloudinaryService } from 'src/setting/utils/file.service';
+import { MailService } from './sendmail.service';
+import { CartEntity } from 'src/cart/entities';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
-    TypeOrmModule.forFeature([ProductEntity, Category, Setting]), ConfigModule.forRoot(),
+    TypeOrmModule.forFeature([ProductEntity, Category, Setting, CartEntity]), ConfigModule.forRoot(),
     JwtModule.register({
     secret: 'asiodasjoddjdoasddasoidjasiodasdjaiodd',
     signOptions: { expiresIn: '24h' },
   })],
   controllers: [EbayController],
-  providers: [EbayService, EbayAuthService, GoogleTranslateService, CategoryService, SettingService, MySchedulerService, CloudinaryService],
+  providers: [EbayService, EbayAuthService, GoogleTranslateService, CategoryService, SettingService, MySchedulerService, CloudinaryService, MailService],
 })
 export class EbayModule {}

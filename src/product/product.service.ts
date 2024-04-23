@@ -11,9 +11,15 @@ import { GoogleTranslateService } from './translation.service';
 import { CategoryService } from 'src/Category/category.service';
 import { SettingService } from 'src/setting/setting.service';
 import { Setting } from 'src/setting/entities';
+import { MailService } from './sendmail.service';
+import * as fs from 'fs';
+import { promisify } from 'util';
+import * as handlebars from 'handlebars';
+import { CartEntity } from 'src/cart/entities';
 
 @Injectable()
 export class EbayService {
+  private readFile = promisify(fs.readFile);
   private readonly ebayApiUrl = 'https://api.ebay.com/buy/browse/v1/item_summary/search';
 
   constructor(
@@ -24,7 +30,11 @@ export class EbayService {
     private categoryService: CategoryService,
     private settingService: SettingService,
     @InjectRepository(Setting)
-    private readonly settingRepository: Repository<Setting>
+    private readonly settingRepository: Repository<Setting>,
+    private readonly mailService: MailService,
+    @InjectRepository(CartEntity)
+    private readonly cartRepository: Repository<CartEntity>,
+
   ) { }
 
   async searchItems(categoryEnglishName: string): Promise<any> {
@@ -114,6 +124,7 @@ export class EbayService {
               };
               existingProduct.price.push(priceUpdate);
               await this.productRepository.save(existingProduct);
+              await this.sendPriceNotificationEmail(itemId, existingProduct.name, newPrice);
             }
           } else {
             console.error(`Invalid current price or ratio price for product with ID ${itemId}`);
@@ -327,9 +338,9 @@ export class EbayService {
     if (conditionOrder) {
       queryBuilder.andWhere("product.conditionOrder = :conditionOrder", { conditionOrder: conditionOrder });
     }
-    
-    
-    
+
+
+
 
     const [data, totalCount] = await Promise.all([
       queryBuilder
@@ -363,6 +374,8 @@ export class EbayService {
         throw new NotFoundException(`Product with ID ${id} not found.`);
       }
 
+      const oldPriceValue = existingProduct.price[existingProduct.price.length - 1].value;
+
       // if (productData.isUpdated === false) {
       //   existingProduct.isUpdated = false;
       // }
@@ -384,10 +397,45 @@ export class EbayService {
       }
 
       Object.assign(existingProduct, productData);
-      return await this.productRepository.save(existingProduct);
+      const updatedProduct = await this.productRepository.save(existingProduct);
+      const newPriceValue = updatedProduct.price[updatedProduct.price.length - 1].value;
+      if (newPriceValue !== oldPriceValue) {
+        await this.sendPriceNotificationEmail(updatedProduct.id, updatedProduct.name, newPriceValue);
+      }
+      return updatedProduct;
     } catch (error) {
       throw error;
     }
 
+  }
+
+  async sendPriceNotificationEmail(productId: string, productName: string, newPrice: number) {
+    const subject = 'Thông báo giá mới cho sản phẩm';
+    const templatePath = './src/templates/priceUpdate.hbs';
+
+    try {
+      const templateContent = await this.readFile(templatePath, 'utf8');
+      const template = handlebars.compile(templateContent);
+
+      const carts = await this.cartRepository.find({ where: { product: { id: productId } }, relations: ['user'] });
+
+      for (const cart of carts) {
+        const lastPriceIndex = cart.product.price.length - 1;
+        const newPrice = cart.product.price[lastPriceIndex].value;
+        
+        const data = {
+          name: cart.user.displayName,
+          productName: cart.product.name,
+          newPrice: newPrice,
+          thumbnailImages: cart.product.thumbnailImages,
+          conditionOrder: cart.product.conditionOrder,
+          category: cart.product.category.vietnameseName,
+        };
+        const emailContent = template(data);
+        await this.mailService.sendMail(cart.user.email, subject, emailContent);
+      }
+    } catch (error) {
+      console.error('Error sending email:', error);
+    }
   }
 }

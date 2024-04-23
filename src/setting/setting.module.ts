@@ -11,13 +11,15 @@ import { CategoryService } from 'src/Category/category.service';
 import { Category } from 'src/Category/entities';
 import { JwtModule } from '@nestjs/jwt';
 import { CloudinaryService } from './utils/file.service';
+import { MailService } from 'src/product/sendmail.service';
+import { CartEntity } from 'src/cart/entities';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Setting, ProductEntity, Category]),JwtModule.register({
+  imports: [TypeOrmModule.forFeature([Setting, ProductEntity, Category, CartEntity]),JwtModule.register({
     secret: 'asiodasjoddjdoasddasoidjasiodasdjaiodd',
     signOptions: { expiresIn: '24h' },
   })],
   controllers: [SettingController],
-  providers: [SettingService, EbayService, EbayAuthService, GoogleTranslateService, CategoryService, CloudinaryService],
+  providers: [SettingService, EbayService, EbayAuthService, GoogleTranslateService, CategoryService, CloudinaryService, MailService],
 })
 export class SettingModule {}

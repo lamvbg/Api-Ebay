@@ -24,6 +24,7 @@ import { CartEntity } from 'src/cart/entities';
 import { CartService } from 'src/cart/cart.service';
 import { DiscountService } from 'src/discount/discount.service';
 import { DiscountEntity } from 'src/discount/entities';
+import { MailService } from 'src/product/sendmail.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([OrderEntity, ProductEntity, UserEntity, Category, OrderItemEntity, CartEntity, Setting, DiscountEntity]),JwtModule.register({
@@ -31,6 +32,6 @@ import { DiscountEntity } from 'src/discount/entities';
     signOptions: { expiresIn: '24h' },
   })],
   controllers: [OrderController],
-  providers: [OrderService, JwtStrategy, AuthService, CloudinaryService, SettingService, EbayService, EbayAuthService, GoogleTranslateService, CategoryService, MySchedulerService, CartService, DiscountService],
+  providers: [OrderService, JwtStrategy, AuthService, CloudinaryService, SettingService, EbayService, EbayAuthService, GoogleTranslateService, CategoryService, MySchedulerService, CartService, DiscountService, MailService],
 })
 export class OrderModule {}

@@ -1,0 +1,78 @@
+<div style='font-family: Poppins'>
+    <table role='content' style='padding: 10px 0px; color: #363740; font-size: 16px;'>
+        <tr>
+            <td style='padding-bottom: 24px; font-weight: 600'>
+                Xin chào {{name}},
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                Chúng tôi rất vui thông báo rằng chúng tôi đã cập nhật giá cho sản phẩm mà bạn quan tâm!
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Dưới đây là thông tin về sản phẩm mới:
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 10px 0px;">
+                <span style="font-weight: bold; font-size: 20px; color: #FF5733;">{{productName}}</span>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 10px 0px;">
+                <span style="font-size: 16px; color: #666;">Giá mới: {{newPrice}} VND</span>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span style="font-size: 16px; color: #666;">Ảnh minh họa:</span>
+                <br />
+                {{#each thumbnailImages}}
+                <img src="{{this.imageUrl}}" alt="Thumbnail" style="max-width: 100px; margin-right: 10px;">
+                {{/each}}
+            </td>
+        </tr>
+
+
+        <tr>
+            <td style="padding: 10px 0px;">
+                <span style="font-size: 16px; color: #666;">Tình trạng sản phẩm: {{conditionOrder}}</span>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 10px 0px;">
+                <span style="font-size: 16px; color: #666;">Danh mục sản phẩm: {{category}}</span>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Hãy truy cập trang web của chúng tôi để cập nhật thông tin và mua hàng.
+            </td>
+        </tr>
+        <tr>
+            <td style='padding-bottom: 16px;'>
+                Chúng tôi hy vọng bạn sẽ tiếp tục ủng hộ chúng tôi!
+            </td>
+        </tr>
+
+        <tr>
+            <td style='padding-bottom: 8px;'>
+                <span>Trân trọng,</span>
+                <br />
+            </td>
+        </tr>
+        <tr>
+            <td style='padding-bottom: 8px;'>
+                <span style='font-weight: 600'>Nhóm Quản trị</span>
+            </td>
+        </tr>
+        <tr>
+            <td style='padding-bottom: 8px;'>
+                <span style='font-weight: 800'>Ebay Order</span>
+            </td>
+        </tr>
+    </table>
+</div>
