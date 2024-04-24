@@ -16,6 +16,7 @@ import * as fs from 'fs';
 import { promisify } from 'util';
 import * as handlebars from 'handlebars';
 import { CartEntity } from 'src/cart/entities';
+import { query } from 'express';
 
 @Injectable()
 export class EbayService {
@@ -295,8 +296,12 @@ export class EbayService {
     }));
   }
 
+  async getPriceSubquery(alias: string): Promise<string> {
+    return `(SELECT "value" FROM jsonb_array_elements(${alias}.price) AS price ORDER BY (price->>'lastUpdated') DESC LIMIT 1)`;
+  }
+
   async findAll(paginationQuery: PaginationQueryDto): Promise<PaginatedProductsResultDto> {
-    let { page, limit, minPrice, maxPrice, category, marketingPrice, condition, conditionOrder } = paginationQuery;
+    let { page, limit, minPrice, maxPrice, category, marketingPrice, condition, conditionOrder, sortField, sortDirection, name } = paginationQuery;
 
     page = Number(page);
     limit = Number(limit);
@@ -311,6 +316,7 @@ export class EbayService {
     }
 
     const offset = (page - 1) * limit;
+
 
     const queryBuilder = this.productRepository.createQueryBuilder('product');
 
@@ -339,8 +345,25 @@ export class EbayService {
       queryBuilder.andWhere("product.conditionOrder = :conditionOrder", { conditionOrder: conditionOrder });
     }
 
+    if (name) {
+      const translatedName = await this.translationService.translateText(name, 'en');
+      queryBuilder.andWhere('product.name ILIKE :name', { name: `%${translatedName}%` });
+    }
 
+    if (sortField === 'createAt') {
+      const direction = sortDirection === 'descend' ? 'DESC' : 'ASC';
+      queryBuilder.orderBy("product.createdAt", direction);
+    }
 
+    if (sortField === 'price') {
+      const priceAlias = 'price_subquery';
+      const priceSubquery = await this.getPriceSubquery('product');
+      const direction = sortDirection === 'descend' ? 'DESC' : 'ASC';
+
+      queryBuilder.addSelect(priceSubquery, priceAlias);
+      queryBuilder.orderBy(`${priceAlias}`, direction);
+    }
+    
 
     const [data, totalCount] = await Promise.all([
       queryBuilder
@@ -422,7 +445,7 @@ export class EbayService {
       for (const cart of carts) {
         const lastPriceIndex = cart.product.price.length - 1;
         const newPrice = cart.product.price[lastPriceIndex].value;
-        
+
         const data = {
           name: cart.user.displayName,
           productName: cart.product.name,

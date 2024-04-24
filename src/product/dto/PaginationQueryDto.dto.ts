@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsOptional, IsPositive, Min } from 'class-validator';
+import { IsIn, IsOptional, IsPositive, Min } from 'class-validator';
 
 export class PaginationQueryDto {
   @IsOptional()
@@ -22,4 +22,14 @@ export class PaginationQueryDto {
   condition?: string;
 
   conditionOrder?: string;
+
+  @IsOptional()
+  @IsIn(['createdAt', 'price'])
+  sortField?: string;
+
+  @IsOptional()
+  @IsIn(['ascend', 'descend'])
+  sortDirection?: string;
+
+  name?: string;
 }

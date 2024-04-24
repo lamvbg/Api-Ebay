@@ -1,6 +1,7 @@
+import { Exclude } from 'class-transformer';
 import { Category } from '../../Category/entities';
 import { OrderItemEntity } from '../../order/entities/orderItem.entity';
-import { Column, Entity, ManyToOne, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
 
 export enum ConditionEnum {
   PRE_ORDER = 'Pre Order',
@@ -64,6 +65,14 @@ export class ProductEntity {
 
   @OneToMany(() => OrderItemEntity, order => order.product)
   orders: OrderItemEntity[];
+
+  @CreateDateColumn({
+    type: 'timestamp',
+    nullable: true,
+    default: () => 'CURRENT_TIMESTAMP(6)',
+  })
+  @Exclude()
+  createdAt: Date;
 
   // @Column({ default: false })
   // isUpdated: boolean;

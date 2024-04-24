@@ -4,6 +4,7 @@ import { AppModule } from './app.module';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import * as express from 'express';
 import * as passport from 'passport';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const server = express();
@@ -14,6 +15,15 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
   app.use(passport.initialize());
+
+  const config = new DocumentBuilder()
+  .setTitle('Ebay API')
+  .setDescription('Ebay API description')
+  .setVersion('1.0')
+  .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
 
   await app.listen(2001);
 }
