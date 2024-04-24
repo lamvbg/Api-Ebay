@@ -32,7 +32,7 @@ export class DiscountService {
   async create(discount: Partial<DiscountEntity>): Promise<DiscountEntity> {
     const newDiscount = await this.discountRepository.save(discount);
 
-    // await this.sendDiscountEmail(newDiscount);
+    await this.sendDiscountEmail(newDiscount);
 
     return newDiscount;
   }
@@ -46,31 +46,31 @@ export class DiscountService {
     await this.discountRepository.delete(id);
   }
 
-  // async sendDiscountEmail(discount: DiscountEntity) {
-  //   const subject = 'Bạn vừa nhận được một mã giảm giá mới!';
-  //   const templatePath = './src/templates/discountCode.hbs';
+  async sendDiscountEmail(discount: DiscountEntity) {
+    const subject = 'Bạn vừa nhận được một mã giảm giá mới!';
+    const templatePath = './src/templates/discountCode.hbs';
 
-  //   try {
-  //     const templateContent = await this.readFile(templatePath, 'utf8');
+    try {
+      const templateContent = await this.readFile(templatePath, 'utf8');
 
-  //     const template = handlebars.compile(templateContent);
+      const template = handlebars.compile(templateContent);
 
-  //     const users = await this.userRepository.find();
+      const users = await this.userRepository.find();
 
-  //     for (const user of users) {
-  //       const data = {
-  //         name: user.displayName,
-  //         discountCode: discount.code,
-  //         discountValue: discount.value
-  //       };
+      for (const user of users) {
+        const data = {
+          name: user.displayName,
+          discountCode: discount.code,
+          discountValue: discount.value
+        };
 
-  //       const processedTemplate = template(data);
+        const processedTemplate = template(data);
 
-  //       await this.mailService.sendMail(user.email, subject, processedTemplate);
-  //       console.log(`Email sent successfully to ${user.email}`);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error sending email:', error);
-  //   }
-  // }
+        await this.mailService.sendMail(user.email, subject, processedTemplate);
+        console.log(`Email sent successfully to ${user.email}`);
+      }
+    } catch (error) {
+      console.error('Error sending email:', error);
+    }
+  }
 }

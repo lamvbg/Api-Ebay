@@ -8,14 +8,14 @@ import { parseStringPromise, Builder } from 'xml2js'; // Import parseStringPromi
 import { PaginationQueryDto } from './dto/PaginationQueryDto.dto';
 import { PaginatedProductsResultDto } from './dto/PaginatedProductsResultDto.dto';
 import { GoogleTranslateService } from './translation.service';
-import { CategoryService } from '../Category/category.service';
-import { SettingService } from '../setting/setting.service';
-import { Setting } from '../setting/entities';
+import { CategoryService } from 'src/Category/category.service';
+import { SettingService } from 'src/setting/setting.service';
+import { Setting } from 'src/setting/entities';
 import { MailService } from './sendmail.service';
 import * as fs from 'fs';
 import { promisify } from 'util';
 import * as handlebars from 'handlebars';
-import { CartEntity } from '../cart/entities';
+import { CartEntity } from 'src/cart/entities';
 
 @Injectable()
 export class EbayService {
@@ -124,7 +124,7 @@ export class EbayService {
               };
               existingProduct.price.push(priceUpdate);
               await this.productRepository.save(existingProduct);
-              // await this.sendPriceNotificationEmail(itemId, existingProduct.name, newPrice);
+              await this.sendPriceNotificationEmail(itemId, existingProduct.name, newPrice);
             }
           } else {
             console.error(`Invalid current price or ratio price for product with ID ${itemId}`);
@@ -400,7 +400,7 @@ export class EbayService {
       const updatedProduct = await this.productRepository.save(existingProduct);
       const newPriceValue = updatedProduct.price[updatedProduct.price.length - 1].value;
       if (newPriceValue !== oldPriceValue) {
-        // await this.sendPriceNotificationEmail(updatedProduct.id, updatedProduct.name, newPriceValue);
+        await this.sendPriceNotificationEmail(updatedProduct.id, updatedProduct.name, newPriceValue);
       }
       return updatedProduct;
     } catch (error) {
@@ -409,34 +409,33 @@ export class EbayService {
 
   }
 
-//   async sendPriceNotificationEmail(productId: string, productName: string, newPrice: number) {
-//     const subject = 'Thông báo giá mới cho sản phẩm';
-//     const templatePath = './src/templates/priceUpdate.hbs';
+  async sendPriceNotificationEmail(productId: string, productName: string, newPrice: number) {
+    const subject = 'Thông báo giá mới cho sản phẩm';
+    const templatePath = './src/templates/priceUpdate.hbs';
 
-//     try {
-//       const templateContent = await this.readFile(templatePath, 'utf8');
-//       const template = handlebars.compile(templateContent);
+    try {
+      const templateContent = await this.readFile(templatePath, 'utf8');
+      const template = handlebars.compile(templateContent);
 
-//       const carts = await this.cartRepository.find({ where: { product: { id: productId } }, relations: ['user'] });
+      const carts = await this.cartRepository.find({ where: { product: { id: productId } }, relations: ['user'] });
 
-//       for (const cart of carts) {
-//         const lastPriceIndex = cart.product.price.length - 1;
-//         const newPrice = cart.product.price[lastPriceIndex].value;
+      for (const cart of carts) {
+        const lastPriceIndex = cart.product.price.length - 1;
+        const newPrice = cart.product.price[lastPriceIndex].value;
         
-//         const data = {
-//           name: cart.user.displayName,
-//           productName: cart.product.name,
-//           newPrice: newPrice,
-//           thumbnailImages: cart.product.thumbnailImages,
-//           conditionOrder: cart.product.conditionOrder,
-//           category: cart.product.category.vietnameseName,
-//         };
-//         const emailContent = template(data);
-//         await this.mailService.sendMail(cart.user.email, subject, emailContent);
-//       }
-//     } catch (error) {
-//       console.error('Error sending email:', error);
-//     }
-//   }
-// }
+        const data = {
+          name: cart.user.displayName,
+          productName: cart.product.name,
+          newPrice: newPrice,
+          thumbnailImages: cart.product.thumbnailImages,
+          conditionOrder: cart.product.conditionOrder,
+          category: cart.product.category.vietnameseName,
+        };
+        const emailContent = template(data);
+        await this.mailService.sendMail(cart.user.email, subject, emailContent);
+      }
+    } catch (error) {
+      console.error('Error sending email:', error);
+    }
+  }
 }
