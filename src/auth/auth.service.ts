@@ -10,7 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UpdateUserDto } from './dto/user.dto';
 import { CloudinaryService } from '../setting/utils/file.service';
 import { Multer } from 'multer';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 
 
 type GooglePassportProfile = GoogleProfile;
