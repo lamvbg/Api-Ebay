@@ -92,7 +92,6 @@ export class AuthService {
   async register(userDto: UpdateUserDto): Promise<UserEntity> {
     const { email, displayName, phone, birthDate, address, password } = userDto;
 
-    // Kiểm tra xem người dùng đã tồn tại chưa
     const existingUser = await this.userRepository.findOne({ where: { email } });
     if (existingUser) {
       throw new ConflictException('User already exists');
@@ -100,7 +99,6 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Tạo mới người dùng với mật khẩu đã hash
     const newUser = this.userRepository.create({
       ...userDto,
       password: hashedPassword,
