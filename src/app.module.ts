@@ -8,6 +8,7 @@ import { CategoryModule } from './Category/category.module';
 import { SettingModule } from './setting/setting.module';
 import { CartModule } from './cart/cart.module';
 import { DiscountModule } from './discount/discount.module';
+import { ContactUsModule } from './contact/contact.module';
 
 @Module({
   imports: [
@@ -19,7 +20,8 @@ import { DiscountModule } from './discount/discount.module';
     CategoryModule,
     SettingModule,
     CartModule,
-    DiscountModule
+    DiscountModule,
+    ContactUsModule
   ],
 })
 export class AppModule {}
