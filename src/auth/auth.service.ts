@@ -10,7 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UpdateUserDto } from './dto/user.dto';
 import { CloudinaryService } from '../setting/utils/file.service';
 import { Multer } from 'multer';
-import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 
 
 type GooglePassportProfile = GoogleProfile;
@@ -61,24 +61,44 @@ export class AuthService {
     return user;
   }
 
+  async register(userDto: UpdateUserDto): Promise<UserEntity> {
+    const { email, displayName, phone, birthDate, address, password } = userDto;
+  
+    const existingUser = await this.userRepository.findOne({ where: { email } });
+    if (existingUser) {
+      throw new ConflictException('User already exists');
+    }
+    const salt = crypto.randomBytes(16).toString('hex');
+  
+    const hashedPassword = this.hashPassword(password, salt);
+    
+    const newUser = this.userRepository.create({
+      ...userDto,
+      password: hashedPassword,
+    });
+  
+    return await this.userRepository.save(newUser);
+  }
+  
+  hashPassword(password: string, salt: string): string {
+    const hash = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
+    return `${hash}.${salt}`; 
+  }
+  
   async signIn(email: string, password: string): Promise<any> {
     const user = await this.userRepository.findOne({ where: { email } });
     if (!user) {
       throw new UnauthorizedException('Invalid email');
     }
-
-    const isHashedPassword = user.password.startsWith('$2b$');
   
-    if (isHashedPassword) {
-      const isPasswordValid = await this.validatePassword(password, user.password);
-      if (!isPasswordValid) {
-        throw new UnauthorizedException('Invalid password');
-      }
-    } else {
-      if (user.password !== password) {
-        throw new UnauthorizedException('Invalid password');
-      }
+    const [storedHash, salt] = user.password.split('.'); 
+  
+    const inputHash = this.hashPassword(password, salt);
+  
+    if (storedHash !== inputHash.split('.')[0]) {
+      throw new UnauthorizedException('Invalid password');
     }
+  
     const payload = {
       sub: user.id,
       name: user.displayName,
@@ -88,25 +108,8 @@ export class AuthService {
       access_token: await this.jwtService.signAsync(payload),
     };
   }
-
-  async register(userDto: UpdateUserDto): Promise<UserEntity> {
-    const { email, displayName, phone, birthDate, address, password } = userDto;
-
-    const existingUser = await this.userRepository.findOne({ where: { email } });
-    if (existingUser) {
-      throw new ConflictException('User already exists');
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newUser = this.userRepository.create({
-      ...userDto,
-      password: hashedPassword,
-    });
-
-    return await this.userRepository.save(newUser);
-  }
-
+  
+  
   async validateUserFromToken(token: string): Promise<UserEntity> {
     try {
       const decodedToken = this.jwtService.verify(token);
@@ -131,9 +134,6 @@ export class AuthService {
     }
   }
 
-  private async validatePassword(plainTextPassword: string, hashedPassword: string): Promise<boolean> {
-    return bcrypt.compare(plainTextPassword, hashedPassword);
-  }
 
   async updateUser(id: string, updateUserDto: UpdateUserDto, avatar?: Multer.File): Promise<UserEntity> {
     try {
