@@ -17,6 +17,7 @@ import { promisify } from 'util';
 import * as handlebars from 'handlebars';
 import { CartEntity } from 'src/cart/entities';
 import { query } from 'express';
+import { isEmail } from 'class-validator';
 
 @Injectable()
 export class EbayService {
@@ -206,10 +207,7 @@ export class EbayService {
         shortDescription: translatedShortDescription,
         description: translatedDescription,
         conditionDescription: translatedConditionDescription,
-        price: {
-          lastUpdated: new Date(),
-          value: newPrice
-        },
+        price: product.price,
         marketingPrice: newMarketingPrice,
         localizedAspects: localizedAspectsUpdate,
       };
@@ -435,17 +433,22 @@ export class EbayService {
   async sendPriceNotificationEmail(productId: string, productName: string, newPrice: number) {
     const subject = 'Thông báo giá mới cho sản phẩm';
     const templatePath = './src/templates/priceUpdate.hbs';
-
+  
     try {
       const templateContent = await this.readFile(templatePath, 'utf8');
       const template = handlebars.compile(templateContent);
-
+  
       const carts = await this.cartRepository.find({ where: { product: { id: productId } }, relations: ['user'] });
-
+  
       for (const cart of carts) {
+        if (!isEmail(cart.user.email)) {
+          console.log(`Invalid email: ${cart.user.email}. Skipping.`);
+          continue;
+        }
+  
         const lastPriceIndex = cart.product.price.length - 1;
         const newPrice = cart.product.price[lastPriceIndex].value;
-
+  
         const data = {
           name: cart.user.displayName,
           productName: cart.product.name,

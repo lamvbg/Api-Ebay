@@ -34,6 +34,9 @@ export class UserEntity {
   @Column({ nullable: true })
   phone: string;
 
+  @Column({default:'123456789'})
+  password: string;
+
   @OneToMany(() => OrderEntity, order => order.user)
   orders: OrderEntity[];
 

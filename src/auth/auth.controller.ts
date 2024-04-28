@@ -1,4 +1,4 @@
-import { Body, Controller, Get, NotFoundException, Param, ParseIntPipe, Put, Redirect, Req, Res, UnauthorizedException, UploadedFile, UseGuards, UseInterceptors, Headers } from '@nestjs/common';
+import { Body, Controller, Get, NotFoundException, Param, ParseIntPipe, Put, Redirect, Req, Res, UnauthorizedException, UploadedFile, UseGuards, UseInterceptors, Headers, Post, ValidationPipe } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { FacebookAuthGuard, GoogleAuthGuard } from './utils/Guards';
 import { JAuthGuard } from './utils/authMiddleWare';
@@ -19,12 +19,27 @@ interface AuthenticatedUser {
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly googleStrategy: GoogleStrategy) {}
+    private readonly googleStrategy: GoogleStrategy) { }
   // Google authentication routes
   @Get('google/login')
   @UseGuards(GoogleAuthGuard)
   handleGoogleLogin() {
     return { msg: 'Google Authentication' };
+  }
+
+  @Post('signin')
+  async signIn(@Body('email') email: string, @Body('password') password: string): Promise<any> {
+    try {
+      const token = await this.authService.signIn(email, password);
+      return { token };
+    } catch (error) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+  }
+
+  @Post('register')
+  async register(@Body(ValidationPipe) createUserDto: UpdateUserDto): Promise<UserEntity> {
+    return await this.authService.register(createUserDto);
   }
 
   @Get('google/redirect')
@@ -33,34 +48,34 @@ export class AuthController {
     try {
       const user = req.user as AuthenticatedUser;
       const { accessToken, redirectURL } = user;
-  
+
       if (!redirectURL) {
         throw new Error("Redirect URL is undefined");
       }
-  
+
       res.redirect(redirectURL);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: 'Internal server error' });
     }
   }
-  
-  @Get('validate-token')
-async validateToken(@Headers('Authorization') token: string): Promise<{ isValid: boolean }> {
-  try {
-    if (!token) {
-      throw new UnauthorizedException('Token is missing');
-    }
 
-    const user = await this.authService.validateUserFromToken(token.replace('Bearer ', ''));
-    return { isValid: !!user };
-  } catch (error) {
-    if (error instanceof UnauthorizedException) {
-      throw error;
+  @Get('validate-token')
+  async validateToken(@Headers('Authorization') token: string): Promise<{ isValid: boolean }> {
+    try {
+      if (!token) {
+        throw new UnauthorizedException('Token is missing');
+      }
+
+      const user = await this.authService.validateUserFromToken(token.replace('Bearer ', ''));
+      return { isValid: !!user };
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      throw new UnauthorizedException('Invalid token');
     }
-    throw new UnauthorizedException('Invalid token');
   }
-}
 
   @Put(':id')
   @UseGuards(JAuthGuard)
@@ -73,13 +88,13 @@ async validateToken(@Headers('Authorization') token: string): Promise<{ isValid:
   ): Promise<UserEntity> {
     const authenticatedUserId = request.user.sub;
     const authenticatedUserRole = request.user.role;
-  
+
     if (authenticatedUserId != id && authenticatedUserRole !== 'admin') {
       throw new UnauthorizedException('You are not authorized to update this resource.');
     }
     return this.authService.updateUser(id, updateUserDto, avatar);
   }
-  
+
 
   @Get('profile')
   @UseGuards(JAuthGuard)
@@ -104,11 +119,11 @@ async validateToken(@Headers('Authorization') token: string): Promise<{ isValid:
     try {
       const user = req.user as AuthenticatedUser;
       const { accessToken, redirectURL } = user;
-  
+
       if (!redirectURL) {
         throw new Error("Redirect URL is undefined");
       }
-  
+
       res.redirect(redirectURL);
     } catch (error) {
       console.error(error);

@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from '../user/entities';
@@ -10,6 +10,8 @@ import { JwtService } from '@nestjs/jwt';
 import { UpdateUserDto } from './dto/user.dto';
 import { CloudinaryService } from '../setting/utils/file.service';
 import { Multer } from 'multer';
+import * as bcrypt from 'bcrypt';
+
 
 type GooglePassportProfile = GoogleProfile;
 type FacebookPassportProfile = FacebookProfile;
@@ -59,6 +61,54 @@ export class AuthService {
     return user;
   }
 
+  async signIn(email: string, password: string): Promise<any> {
+    const user = await this.userRepository.findOne({ where: { email } });
+    if (!user) {
+      throw new UnauthorizedException('Invalid email');
+    }
+
+    const isHashedPassword = user.password.startsWith('$2b$');
+  
+    if (isHashedPassword) {
+      const isPasswordValid = await this.validatePassword(password, user.password);
+      if (!isPasswordValid) {
+        throw new UnauthorizedException('Invalid password');
+      }
+    } else {
+      if (user.password !== password) {
+        throw new UnauthorizedException('Invalid password');
+      }
+    }
+    const payload = {
+      sub: user.id,
+      name: user.displayName,
+      role: user.role,
+    };
+    return {
+      access_token: await this.jwtService.signAsync(payload),
+    };
+  }
+
+  async register(userDto: UpdateUserDto): Promise<UserEntity> {
+    const { email, displayName, phone, birthDate, address, password } = userDto;
+
+    // Kiểm tra xem người dùng đã tồn tại chưa
+    const existingUser = await this.userRepository.findOne({ where: { email } });
+    if (existingUser) {
+      throw new ConflictException('User already exists');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Tạo mới người dùng với mật khẩu đã hash
+    const newUser = this.userRepository.create({
+      ...userDto,
+      password: hashedPassword,
+    });
+
+    return await this.userRepository.save(newUser);
+  }
+
   async validateUserFromToken(token: string): Promise<UserEntity> {
     try {
       const decodedToken = this.jwtService.verify(token);
@@ -76,12 +126,15 @@ export class AuthService {
 
       return user;
     } catch (error) {
-      // Xử lý lỗi decode token
       if (error.name === 'JsonWebTokenError') {
         throw new UnauthorizedException('Invalid token');
       }
-      throw error; // Ném lại lỗi để NestJS xử lý
+      throw error; 
     }
+  }
+
+  private async validatePassword(plainTextPassword: string, hashedPassword: string): Promise<boolean> {
+    return bcrypt.compare(plainTextPassword, hashedPassword);
   }
 
   async updateUser(id: string, updateUserDto: UpdateUserDto, avatar?: Multer.File): Promise<UserEntity> {
