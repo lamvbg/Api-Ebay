@@ -3,7 +3,6 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import * as express from 'express';
-import * as passport from 'passport';
 // import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
@@ -14,7 +13,6 @@ async function bootstrap() {
   app.enableCors();
 
   app.setGlobalPrefix('api');
-  app.use(passport.initialize());
 
   // const config = new DocumentBuilder()
   // .setTitle('Ebay API')
