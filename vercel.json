@@ -2,19 +2,20 @@
     "version": 2,
     "builds": [
         {
-            "src": "apps/api-ebay-app/src/main.ts",
+            "src": "./src/main.ts",
             "use": "@vercel/node"
         }
     ],
     "routes": [
         {
             "src": "/(.*)",
-            "dest": "apps/api-ebay-app/src/main.ts",
+            "dest": "/",
             "methods": [
                 "GET",
                 "POST",
                 "PUT",
-                "DELETE"
+                "DELETE",
+                "PATCH"
             ]
         }
     ]
