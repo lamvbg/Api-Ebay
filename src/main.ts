@@ -1,13 +1,13 @@
 // main.ts
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ExpressAdapter } from '@nestjs/platform-express';
-import * as express from 'express';
+// import { ExpressAdapter } from '@nestjs/platform-express';
+// import * as express from 'express';
 // import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
-  const server = express();
-  const app = await NestFactory.create(AppModule, new ExpressAdapter(server));
+  // const server = express();
+  const app = await NestFactory.create(AppModule);
   
   // Cấu hình CORS
   app.enableCors();
