@@ -15,7 +15,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       clientID: '663430011506-av2org7g915448j33o0ruo58vubmda8v.apps.googleusercontent.com',
       clientSecret: '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',
       callbackURL: isProduction
-        ? 'https://api-ebay.onrender.com/api/auth/google/redirect'
+        ? 'https://api-orderus-871aeb23e293.herokuapp.com/api/auth/google/redirect'
         : 'http://localhost:2001/api/auth/google/redirect',
       scope: ['profile', 'email'],
     });
