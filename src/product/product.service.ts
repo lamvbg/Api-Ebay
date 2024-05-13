@@ -166,14 +166,13 @@ export class EbayService {
 
       const newMarketingPrice = product.marketingPrice;
 
-
-      if (product) {
+      if (newMarketingPrice === null) {
         if (!Array.isArray(product.price)) {
           product.price = [];
         }
         const lastPriceEntry = product.price[product.price.length - 1];
         const lastPrice = lastPriceEntry ? lastPriceEntry.value : null;
-
+      
         if (!isNaN(newPriceValue) && lastPrice !== newPrice) {
           const priceUpdate = {
             lastUpdated: new Date(),
@@ -183,8 +182,9 @@ export class EbayService {
           await this.productRepository.save(product);
         }
       } else {
-        console.error(`Product with ID ${itemId} not found in the database`);
+        console.log(`Marketing price is not null for product with ID ${itemId}`);
       }
+      
 
       // Translate data into English
       const translatedName = ebayData.title ? await this.translationService.translateText(ebayData.title, 'vi') : ebayData.title;
