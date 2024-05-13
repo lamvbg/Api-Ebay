@@ -46,4 +46,19 @@ export class MailService {
       console.error('Error sending email:', error);
     }
   }
+
+  async sendContact(from: string, to: string, subject: string, html: string) {
+    const mailOptions = {
+      from, 
+      to,
+      subject,
+      html
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+    } catch (error) {
+      console.error('Error sending email:', error);
+    }
+  }
 }

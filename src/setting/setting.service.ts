@@ -62,6 +62,8 @@ export class SettingService {
   
     if (Number(updatedSettingEntity.ratioPrice) !== Number(oldRatioPrice)) {
       await this.ebayService.updatePricesAccordingToRatio(updatedSettingEntity.ratioPrice, oldRatioPrice);
+      console.log(updatedSettingEntity.ratioPrice)
+      console.log(oldRatioPrice)
     }
 
     if (bannerTopImages) {

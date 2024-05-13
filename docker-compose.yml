@@ -1,0 +1,31 @@
+version: '3'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    env_file:
+      - .env
+    ports:
+      - 2001:2001
+    volumes:
+      - ./src:/app/src
+    depends_on:
+      - postgres
+    image: tungseo2011/api-orderus:v1.0
+
+  postgres:
+    image: tungseo2011/postgres:15-alpine 
+    restart: always
+    volumes:
+      - postgresqldata:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=apiOrder
+      - POSTGRES_USER=tungseo
+
+volumes:
+  postgresqldata:
