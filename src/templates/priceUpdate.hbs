@@ -23,16 +23,14 @@
         </tr>
         <tr>
             <td style="padding: 10px 0px;">
-                <span style="font-size: 16px; color: #666;">Giá mới: {{newPrice}} VND</span>
+                <span style="font-size: 16px; color: #666;">Giá mới: {{newPrice}}</span>
             </td>
         </tr>
         <tr>
             <td>
                 <span style="font-size: 16px; color: #666;">Ảnh minh họa:</span>
                 <br />
-                {{#each thumbnailImages}}
-                <img src="{{this.imageUrl}}" alt="Thumbnail" style="max-width: 100px; margin-right: 10px;">
-                {{/each}}
+                <img src="{{thumbnailImages.[0].imageUrl}}" alt="Thumbnail" style="max-width: 100px; margin-right: 10px;">
             </td>
         </tr>
 

@@ -58,10 +58,10 @@ export class EbayService {
         const priceTreatment = itemSummary.marketingPrice ? parseFloat(itemSummary.marketingPrice.priceTreatment) : 0;
 
         const existingProduct = await this.productRepository.findOne({ where: { id: itemId } });
-        // if (existingProduct && existingProduct.isUpdated) {
-        //   console.log(`Product with ID ${itemId} has been updated recently. Skipping price update.`);
-        //   continue;
-        // }
+        if (existingProduct && existingProduct.isUpdated === true) {
+          console.log(`Product with ID ${itemId} has been updated recently. Skipping price update.`);
+          continue;
+        }
 
         if (!existingProduct) {
           const newProduct = new ProductEntity();
@@ -148,45 +148,96 @@ export class EbayService {
   async getItemAndUpdatePrice(itemId: string): Promise<any> {
     try {
       const accessToken = await this.ebayAuthService.getAccessToken();
-
+  
       const response = await axios.get(`https://api.ebay.com/buy/browse/v1/item/${itemId}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-
+  
       const ebayData = response.data;
-      const newPriceValue = parseFloat(ebayData.price.value)
+      const newPriceValue = parseFloat(ebayData.price.value);
+      const newOriginalPrice = ebayData.marketingPrice && ebayData.marketingPrice.originalPrice ? parseFloat(ebayData.marketingPrice.originalPrice.value) : 0;
+      const newDiscountAmount = ebayData.marketingPrice && ebayData.marketingPrice.discountAmount ? parseFloat(ebayData.marketingPrice.discountAmount.value) : 0;
+      const discountPercentage = ebayData.marketingPrice ? parseFloat(ebayData.marketingPrice.discountPercentage) : 0;
+      const priceTreatment = ebayData.marketingPrice ? parseFloat(ebayData.marketingPrice.priceTreatment) : 0;
+  
+      let product = await this.productRepository.findOne({ where: { id: itemId } });
+  
+      if (!product) {
+        product = new ProductEntity();
+        product.id = itemId;
+        product.name = ebayData.title;
+        product.isUpdated = false;
 
-      const oldRatioPrice = await this.settingService.getRatioPrice();
-
-      const newPrice = newPriceValue * oldRatioPrice + 1300;
-
-      const product = await this.productRepository.findOne({ where: { id: itemId } });
-
-      const newMarketingPrice = product.marketingPrice;
-
-      if (newMarketingPrice === null) {
+        const oldRatioPrice = await this.settingService.getRatioPrice();
+        const newPrice = newPriceValue * oldRatioPrice + 1300;
+        const newOriginal = newOriginalPrice * oldRatioPrice;
+        const newDiscount = newDiscountAmount * oldRatioPrice;
+  
+        const newPriceEntry = {
+          lastUpdated: new Date(),
+          value: newPrice
+        };
+  
+        const newMarketingPriceEntry = ebayData.marketingPrice ? {
+          originalPrice: {
+            value: newOriginal.toFixed(2),
+            currency: "VND",
+          },
+          discountPercentage: discountPercentage.toFixed(2),
+          discountAmount: {
+            value: newDiscount.toFixed(2),
+            currency: "VND",
+          },
+          priceTreatment: priceTreatment.toFixed(2),
+        } : undefined;
+  
+        product.price = [newPriceEntry];
+        product.additionalImages = ebayData.additionalImages;
+        product.thumbnailImages = ebayData.thumbnailImages;
+        product.condition = ebayData.condition;
+        product.seller = ebayData.seller;
+        product.itemWebUrl = ebayData.itemWebUrl;
+        product.itemLocation = ebayData.itemLocation;
+        product.marketingPrice = newMarketingPriceEntry;
+  
+        await this.productRepository.save(product);
+      } else {
+        if (product.isUpdated) {
+          console.log(`Product with ID ${itemId} has been updated recently. Skipping price update.`);
+          return product;
+        }
         if (!Array.isArray(product.price)) {
           product.price = [];
         }
         const lastPriceEntry = product.price[product.price.length - 1];
         const lastPrice = lastPriceEntry ? lastPriceEntry.value : null;
-      
-        if (!isNaN(newPriceValue) && lastPrice !== newPrice) {
-          const priceUpdate = {
-            lastUpdated: new Date(),
-            value: newPrice
-          };
-          product.price.push(priceUpdate);
-          await this.productRepository.save(product);
+  
+        if (!isNaN(newPriceValue)) {
+          const oldRatioPrice = await this.settingService.getRatioPrice();
+          const newPrice = newPriceValue * oldRatioPrice + 1300;
+  
+          if (lastPrice !== newPrice) {
+            const priceUpdate = {
+              lastUpdated: new Date(),
+              value: newPrice
+            };
+            product.price.push(priceUpdate);
+            await this.productRepository.save(product);
+            await this.sendPriceNotificationEmail(itemId, product.name, newPrice);
+          }
+        } else {
+          console.error(`Invalid current price or ratio price for product with ID ${itemId}`);
         }
-      } else {
-        console.log(`Marketing price is not null for product with ID ${itemId}`);
+  
+        if (!ebayData.marketingPrice) {
+          product.marketingPrice = null;
+          await this.productRepository.save(product);
+          console.log(`Marketing price is null for product with ID ${itemId}`);
+        }
       }
-      
-
-      // Translate data into English
+  
       const translatedName = ebayData.title ? await this.translationService.translateText(ebayData.title, 'vi') : ebayData.title;
       const translatedShortDescription = ebayData.shortDescription ? await this.translationService.translateText(ebayData.shortDescription, 'vi') : ebayData.shortDescription;
       const translatedDescription = ebayData.description ? await this.translationService.translateText(ebayData.description, 'vi') : ebayData.description;
@@ -208,13 +259,15 @@ export class EbayService {
         description: translatedDescription,
         conditionDescription: translatedConditionDescription,
         price: product.price,
-        marketingPrice: newMarketingPrice,
+        marketingPrice: product.marketingPrice,
         localizedAspects: localizedAspectsUpdate,
       };
     } catch (error) {
       throw error;
     }
   }
+  
+  
 
   async searchItemById(itemId: string): Promise<any> {
     try {
@@ -395,11 +448,11 @@ export class EbayService {
         throw new NotFoundException(`Product with ID ${id} not found.`);
       }
 
-      const oldPriceValue = existingProduct.price[existingProduct.price.length - 1].value;
+      if (productData.price || productData.marketingPrice) {
+        productData.isUpdated = true;
+      }
 
-      // if (productData.isUpdated === false) {
-      //   existingProduct.isUpdated = false;
-      // }
+      const oldPriceValue = existingProduct.price[existingProduct.price.length - 1].value;
 
       if (productData.marketingPrice && productData.marketingPrice.discountPercentage) {
         const originalPriceValue = parseFloat(existingProduct.marketingPrice.originalPrice.value);
@@ -448,12 +501,12 @@ export class EbayService {
   
         const lastPriceIndex = cart.product.price.length - 1;
         const newPrice = cart.product.price[lastPriceIndex].value;
-  
+        const newPriceFormatted = newPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
         const data = {
           name: cart.user.displayName,
           productName: cart.product.name,
-          newPrice: newPrice,
-          thumbnailImages: cart.product.thumbnailImages,
+          newPrice: newPriceFormatted,
+          thumbnailImages: cart.product.thumbnailImages || cart.product.additionalImages,
           conditionOrder: cart.product.conditionOrder,
           category: cart.product.category.vietnameseName,
         };

@@ -16,7 +16,7 @@ import { ConfigModule } from '@nestjs/config';
       synchronize: true,
       logging: true,
       entities: [__dirname + "/../**/**/*.entity{.ts,.js}"],
-      ssl: false,
+      ssl: true,
     }),
   ],
 })

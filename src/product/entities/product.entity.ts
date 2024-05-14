@@ -74,6 +74,6 @@ export class ProductEntity {
   @Exclude()
   createdAt: Date;
 
-  // @Column({ default: false })
-  // isUpdated: boolean;
+  @Column({ default: false })
+  isUpdated: boolean;
 }
