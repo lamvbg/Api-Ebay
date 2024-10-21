@@ -1,4 +1,4 @@
-import { Body, Controller, Get, NotFoundException, Param, ParseIntPipe, Put, Redirect, Req, Res, UnauthorizedException, UploadedFile, UseGuards, UseInterceptors, Headers, Post, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, NotFoundException, Param, ParseIntPipe, Put, Redirect, Req, Res, UnauthorizedException, UploadedFile, UseGuards, UseInterceptors, Headers, Post, ValidationPipe, HttpCode, HttpStatus } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { FacebookAuthGuard, GoogleAuthGuard } from './utils/Guards';
 import { JAuthGuard } from './utils/authMiddleWare';
@@ -9,6 +9,8 @@ import { UpdateUserDto } from './dto/user.dto';
 import { UserEntity } from '../user/entities';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
+import { ForgotPasswordDto } from './dto/forgot.dto';
+import { ResetPasswordDto } from './dto/reset.dto';
 
 interface AuthenticatedUser {
   accessToken: string;
@@ -42,6 +44,22 @@ export class AuthController {
     return await this.authService.register(createUserDto);
   }
 
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    const { email } = forgotPasswordDto;
+    await this.authService.forgotPassword(email);
+    return { message: 'If an account with that email exists, a password reset email has been sent.' };
+  }
+
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    const { token, newPassword } = resetPasswordDto;
+    await this.authService.resetPassword(token, newPassword);
+    return { message: 'Password has been reset successfully' };
+  }
+  
   @Get('google/redirect')
   @UseGuards(GoogleAuthGuard)
   async handleGoogleRedirect(@Req() req: Request, @Res() res: Response) {

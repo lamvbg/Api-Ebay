@@ -9,6 +9,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './utils/jwt.strategy';
 import { JAuthGuard } from './utils/authMiddleWare';
 import { CloudinaryService } from '../setting/utils/file.service';
+import { MailService } from 'src/product/sendmail.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([UserEntity]),
@@ -23,7 +24,8 @@ import { CloudinaryService } from '../setting/utils/file.service';
     AuthService,
     JwtStrategy,
     JAuthGuard,
-    CloudinaryService
+    CloudinaryService,
+    MailService
   ],
 })
 export class AuthModule {}

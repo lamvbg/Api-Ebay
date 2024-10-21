@@ -8,12 +8,7 @@
 
         <tr>
             <td>
-                Chúng tôi rất vui thông báo rằng chúng tôi đã cập nhật giá cho sản phẩm mà bạn quan tâm!
-            </td>
-        </tr>
-        <tr>
-            <td>
-                Dưới đây là thông tin về sản phẩm mới:
+                Sản phẩm bạn đang quan tâm mới có thay đổi về giá.
             </td>
         </tr>
         <tr>
@@ -23,14 +18,23 @@
         </tr>
         <tr>
             <td style="padding: 10px 0px;">
-                <span style="font-size: 16px; color: #666;">Giá mới: {{newPrice}}</span>
+                <span style="font-weight: bold; font-size: 16px; color: #666;">Giá mới: <span
+                        style="color: #FF5733;">{{newPriceUSD}}</span></span>
             </td>
+        </tr>
+        <tr>
+            <td style="padding: 10px 0px;">
+                <span style="font-weight: bold; font-size: 16px; color: #666;">Giá về tay: <span
+                        style="color: #FF5733;">{{newPrice}}</span></span>
+            </td>
+
         </tr>
         <tr>
             <td>
                 <span style="font-size: 16px; color: #666;">Ảnh minh họa:</span>
                 <br />
-                <img src="{{thumbnailImages.[0].imageUrl}}" alt="Thumbnail" style="max-width: 100px; margin-right: 10px;">
+                <img src="{{thumbnailImages}}" alt="Thumbnail"
+                    style="max-width: 100px; margin-right: 10px;">
             </td>
         </tr>
 
@@ -51,8 +55,14 @@
             </td>
         </tr>
         <tr>
+            <td style="padding: 10px 0px;">
+                Link sản phẩm: <a
+                    href="https://www.orderus.vn/product-detail/{{productId}}">https://www.orderus.vn/product-detail/{{productId}}</a>
+            </td>
+        </tr>
+        <tr>
             <td style='padding-bottom: 16px;'>
-                Chúng tôi hy vọng bạn sẽ tiếp tục ủng hộ chúng tôi!
+                Chúc bạn săn dược Deal ngon!
             </td>
         </tr>
 
@@ -69,7 +79,7 @@
         </tr>
         <tr>
             <td style='padding-bottom: 8px;'>
-                <span style='font-weight: 800'>Ebay Order</span>
+                <span style='font-weight: 800'>Orderus.vn</span>
             </td>
         </tr>
     </table>

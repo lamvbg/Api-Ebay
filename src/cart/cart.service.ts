@@ -26,18 +26,14 @@ export class CartService {
       throw new NotFoundException(`Product with ID ${productId} not found.`);
     }
   
-    // Lấy tất cả các mục trong giỏ hàng của người dùng có cùng productId
     const cartItems = await this.cartRepository.find({ where: { user: { id: userId }, product: { id: productId } } });
   
-    // Kiểm tra xem có mục nào có warrantyFee giống với warrantyFee từ addToCartDto không
     const existingCartItem = cartItems.find(item => item.warrantyFee === warrantyFee);
   
     if (existingCartItem) {
-      // Nếu có, chỉ tăng số lượng
       existingCartItem.quantity += quantity || 1;
       return await this.cartRepository.save(existingCartItem);
     } else {
-      // Nếu không, tạo một mục mới
       const newCartItem = this.cartRepository.create({
         user: { id: userId },
         product: { id: productId },

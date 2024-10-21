@@ -5,10 +5,8 @@ import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryColumn, 
 
 export enum ConditionEnum {
   PRE_ORDER = 'Pre Order',
-  NEW = 'New',
-  OPEN_BOX = 'Open Box',
-  Refurbished= 'Refurbished',
-  Used = 'Used'
+  IN_STOCK = 'In Stock',
+  IN_TRANSIT = 'In Transit',
 }
 
 @Entity({ name: 'Product' })
@@ -21,6 +19,9 @@ export class ProductEntity {
 
   @ManyToOne(() => Category, category => category.products, { eager: true })
   category: Category;
+
+  @Column({ nullable: true })
+  keywords: string;
 
   @Column({ type: 'jsonb' })
   price: {
@@ -36,9 +37,6 @@ export class ProductEntity {
 
   @Column({ type: 'enum', enum: ConditionEnum, default: ConditionEnum.PRE_ORDER })
   conditionOrder : ConditionEnum;
-
-  @Column({ type: 'json', nullable: true })
-  seller: string[];
 
   @Column({ type: 'json', nullable: true })
   thumbnailImages: string[];
@@ -63,6 +61,12 @@ export class ProductEntity {
     priceTreatment: string;
   };
 
+  @Column({ nullable: true })
+  storeName: string;
+
+  @Column({ nullable: true })
+  quantity: number;
+
   @OneToMany(() => OrderItemEntity, order => order.product)
   orders: OrderItemEntity[];
 
@@ -76,4 +80,13 @@ export class ProductEntity {
 
   @Column({ default: false })
   isUpdated: boolean;
+
+  @Column({ type: 'json', nullable: true })
+  localizedAspects: string[];
+
+  @Column({ nullable: true })
+  brand: string;
+
+  @Column({ nullable: true })
+  description: string;
 }

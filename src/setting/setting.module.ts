@@ -13,9 +13,10 @@ import { JwtModule } from '@nestjs/jwt';
 import { CloudinaryService } from './utils/file.service';
 import { MailService } from '../product/sendmail.service';
 import { CartEntity } from '../cart/entities';
+import { OrderItemEntity } from 'src/order/entities/orderItem.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Setting, ProductEntity, Category, CartEntity]),JwtModule.register({
+  imports: [TypeOrmModule.forFeature([Setting, ProductEntity, Category, CartEntity, OrderItemEntity]),JwtModule.register({
     secret: 'asiodasjoddjdoasddasoidjasiodasdjaiodd',
     signOptions: { expiresIn: '24h' },
   })],

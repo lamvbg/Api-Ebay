@@ -24,7 +24,7 @@ export class MailService {
       auth: {
         type: 'OAuth2',
         user: 'lamvbgcd191320@fpt.edu.vn',
-        clientId:       '858151451750-mrugeu9fj2rhb1l9i1mhu23972j3g32b.apps.googleusercontent.com',
+        clientId:'858151451750-mrugeu9fj2rhb1l9i1mhu23972j3g32b.apps.googleusercontent.com',
         clientSecret: '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',
         refreshToken: '1//04PPO-Fs_xIkBCgYIARAAGAQSNwF-L9IrhuwXV4pIOjvoXn9MAT5ysxH1BMhGFJ7rPVF912gL2BbIHZNCBz88Bbts2z7vQHhO3qA',
         accessToken: oauth2Client.getAccessToken()

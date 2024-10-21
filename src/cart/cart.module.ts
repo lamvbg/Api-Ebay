@@ -9,6 +9,7 @@ import { JwtStrategy } from '../auth/utils/jwt.strategy';
 import { AuthService } from '../auth/auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { CloudinaryService } from '../setting/utils/file.service';
+import { MailService } from 'src/product/sendmail.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([CartEntity, ProductEntity, UserEntity]),JwtModule.register({
@@ -16,6 +17,6 @@ import { CloudinaryService } from '../setting/utils/file.service';
     signOptions: { expiresIn: '24h' },
   })],
   controllers: [CartController],
-  providers: [CartService, JwtStrategy, AuthService, CloudinaryService],
+  providers: [CartService, JwtStrategy, AuthService, CloudinaryService, MailService],
 })
 export class CartModule {}

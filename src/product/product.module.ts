@@ -16,11 +16,12 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { CloudinaryService } from '../setting/utils/file.service';
 import { MailService } from './sendmail.service';
 import { CartEntity } from '../cart/entities';
+import { OrderItemEntity } from 'src/order/entities/orderItem.entity';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
-    TypeOrmModule.forFeature([ProductEntity, Category, Setting, CartEntity]), ConfigModule.forRoot(),
+    TypeOrmModule.forFeature([ProductEntity, Category, Setting, CartEntity, OrderItemEntity]), ConfigModule.forRoot(),
     JwtModule.register({
     secret: 'asiodasjoddjdoasddasoidjasiodasdjaiodd',
     signOptions: { expiresIn: '24h' },

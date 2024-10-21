@@ -37,6 +37,9 @@ export class UserEntity {
   @Column({default:'123456789'})
   password: string;
 
+  @Column({ nullable: true })
+  resetToken: string;
+
   @OneToMany(() => OrderEntity, order => order.user)
   orders: OrderEntity[];
 

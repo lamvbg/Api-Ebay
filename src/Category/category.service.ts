@@ -1,11 +1,12 @@
 // src/category/category.service.ts
 
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Category } from './entities';
 import { GoogleTranslateService } from '../product/translation.service';
 import { ProductEntity } from '../product/entities';
+import { OrderItemEntity } from 'src/order/entities/orderItem.entity';
 
 @Injectable()
 export class CategoryService {
@@ -15,7 +16,9 @@ export class CategoryService {
     private translationService: GoogleTranslateService,
     @InjectRepository(ProductEntity)
     private productRepository: Repository<ProductEntity>,
-  ) {}
+    @InjectRepository(OrderItemEntity)
+    private readonly orderItemRepository: Repository<OrderItemEntity>,
+  ) { }
 
   async findAll(): Promise<Category[]> {
     return await this.categoryRepository.find();
@@ -34,17 +37,22 @@ export class CategoryService {
       const englishName = await this.translationService.translateText(categoryData.vietnameseName, 'en');
       categoryData.englishName = englishName;
     }
-    
+
     const category = this.categoryRepository.create(categoryData);
     return await this.categoryRepository.save(category);
   }
 
   async remove(id: number): Promise<any> {
     const productsInCategory = await this.productRepository.find({ where: { category: { id } } });
-    if (productsInCategory.length > 0) {
-        await this.productRepository.delete({ category: { id } });
+
+    for (const product of productsInCategory) {
+      const orderItems = await this.orderItemRepository.find({ where: { product: { id: product.id } } });
+      if (orderItems.length > 0) {
+        throw new BadRequestException(`Cannot delete category because product with id ${product.id} is in an order.`);
+      }
     }
+
+    await this.productRepository.delete({ category: { id } });
     await this.categoryRepository.delete(id);
-}
-  
+  }
 }

@@ -32,4 +32,6 @@ export class PaginationQueryDto {
   sortDirection?: string;
 
   name?: string;
+
+  keywords?: string;
 }
